@@ -22,6 +22,9 @@ contract NewsForumContract {
         string title;
         string content;
         address author;
+        address[] upvotes;
+        address[] downvotes;
+        bool isValidated;
         bool valid;
     }
 
@@ -52,7 +55,7 @@ contract NewsForumContract {
         require(users[addressToUserId[msg.sender]].valid == true, "You must be registered to add an article");
         
         uint id = articles.length;
-        articles.push(Article(id, _title, _content, msg.sender, true));
+        articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), false, true));
         articleToOwner[id] = msg.sender;
     }
 
@@ -63,6 +66,46 @@ contract NewsForumContract {
 
         articles[articleId].title = _title;
         articles[articleId].content = _content;
+    }
+
+    function upvoteArticle(uint articleId) external {
+        require(users[addressToUserId[msg.sender]].valid == true, "You must be registered to upvote an article");
+        require(articles[articleId].valid == true, "Article does not exist");
+
+        for (uint i = 0; i < articles[articleId].upvotes.length; i++) {
+            if (articles[articleId].upvotes[i] == msg.sender) {
+                revert("You have already upvoted this article");
+            }
+        }
+
+        for (uint i = 0; i < articles[articleId].downvotes.length; i++) {
+            if (articles[articleId].downvotes[i] == msg.sender) {
+                delete articles[articleId].downvotes[i];
+                return;
+            }
+        }
+
+        articles[articleId].upvotes.push(msg.sender);
+    }
+
+    function downvoteArticle(uint articleId) external {
+        require(users[addressToUserId[msg.sender]].valid == true, "You must be registered to downvote an article");
+        require(articles[articleId].valid == true, "Article does not exist");
+
+        for (uint i = 0; i < articles[articleId].downvotes.length; i++) {
+            if (articles[articleId].downvotes[i] == msg.sender) {
+                revert("You have already downvoted this article");
+            }
+        }
+
+        for (uint i = 0; i < articles[articleId].upvotes.length; i++) {
+            if (articles[articleId].upvotes[i] == msg.sender) {
+                delete articles[articleId].upvotes[i];
+                return;
+            }
+        }
+
+        articles[articleId].downvotes.push(msg.sender);
     }
 
     function getArticleById (uint _id) external view returns (Article memory) {
@@ -79,5 +122,25 @@ contract NewsForumContract {
             }
         }
         return myArticles;
+    }
+
+    function getNumberOfUpvotes(uint articleId) external view returns (uint) {
+        return articles[articleId].upvotes.length;
+    }
+
+    function getNumberOfDownvotes(uint articleId) external view returns (uint) {
+        return articles[articleId].downvotes.length;
+    }
+
+    function getAllArticles () external view returns (Article[] memory) {
+        Article[] memory allArticles = new Article[](articles.length);
+        uint counter = 0;
+        for (uint i = 0; i < articles.length; i++) {
+            if (articles[i].isValidated == true) {
+                allArticles[counter] = articles[i];
+                counter++;
+            }
+        }
+        return allArticles;
     }
 }
