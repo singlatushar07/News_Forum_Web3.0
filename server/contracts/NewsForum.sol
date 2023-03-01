@@ -26,6 +26,7 @@ contract NewsForumContract {
         address[] downvotes;
         bool isValidated;
         bool valid;
+        uint timestamp;
     }
 
     struct User {
@@ -33,6 +34,7 @@ contract NewsForumContract {
         string email;
         address id;
         bool valid;
+        uint timestamp;
     }
 
     constructor() {
@@ -40,7 +42,7 @@ contract NewsForumContract {
     }
 
     function addNewUser(string memory _name, string memory _email, address _wallet) external OnlyOwner {
-        users.push(User(_name, _email, _wallet, true));
+        users.push(User(_name, _email, _wallet, true, block.timestamp));
         addressToUserId[_wallet] = users.length - 1;
     }
 
@@ -49,13 +51,14 @@ contract NewsForumContract {
 
         users[addressToUserId[msg.sender]].name = _name;
         users[addressToUserId[msg.sender]].email = _email;
+        users[addressToUserId[msg.sender]].timestamp = block.timestamp;
     }
 
     function addArticle(string memory _title, string memory _content) external {
         require(users[addressToUserId[msg.sender]].valid == true, "You must be registered to add an article");
         
         uint id = articles.length;
-        articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), false, true));
+        articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), false, true, block.timestamp));
         articleToOwner[id] = msg.sender;
     }
 
@@ -66,6 +69,7 @@ contract NewsForumContract {
 
         articles[articleId].title = _title;
         articles[articleId].content = _content;
+        articles[articleId].timestamp = block.timestamp;
     }
 
     function upvoteArticle(uint articleId) external {
