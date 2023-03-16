@@ -9,6 +9,7 @@ contract NewsForumContract {
     uint256 public constant VALIDATION_REWARD = 10;
     uint256 public constant NUMBER_OF_VALIDATORS = 1;
     uint256 public totalRewardCount = 0;
+    uint256 public maxNumberOfActiveValidators = 10;
 
     address owner;
 
@@ -66,7 +67,7 @@ contract NewsForumContract {
     }
 
     function addNewUser(string memory _name, string memory _email, address _wallet) external OnlyOwner {
-        users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0));
+        users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0, 0));
         validators[msg.sender] = false;
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
@@ -86,10 +87,13 @@ contract NewsForumContract {
         // Logic to update validators
     }
 
+
     function addArticle(string memory _title, string memory _content) external OnlyRegistered {
         uint id = articles.length;
         articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), new address[](0), false, true, block.timestamp));
         articleToOwner[id] = msg.sender;
+
+        //giveCanBePossibleValidatorPower();
     }
 
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
@@ -223,6 +227,16 @@ contract NewsForumContract {
         }
     }
 
+    function currentActiveValidators() private returns (uint256){
+        uint256 count = 0;
+        for(uint i = 0; i < validators.length; i++){
+            if(validators[i] == true){
+                count += 1;
+            }
+        }
+        return count;
+    }
+
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
         require(articles[articleId].valid == true, "Article does not exist");
         require(articles[articleId].isValidated == false, "Article has already been validated");
@@ -240,6 +254,8 @@ contract NewsForumContract {
             emit ArticleValidated(articleId);
         }
 
-        transferValidationPowerIfPossible();
+        if(maxNumberOfActiveValidators <= currentActiveValidators()){
+            transferValidationPowerIfPossible();
+        }
     }
 }
