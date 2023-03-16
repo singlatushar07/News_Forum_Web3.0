@@ -8,11 +8,13 @@ contract NewsForumContract {
     uint256 public constant VALIDATIONS_REQUIRED = 10;
     uint256 public constant VALIDATION_REWARD = 10;
     uint256 public constant NUMBER_OF_VALIDATORS = 1;
+    uint256 public totalRewardCount = 0;
 
     address owner;
 
     User[] public users;
     mapping(address => uint256) addressToUserId;
+    mapping(uint256 => address) UserIdToaddress;
     
     Article[] public articles;
     mapping(uint256 => address) articleToOwner;
@@ -32,6 +34,7 @@ contract NewsForumContract {
         _;
     }
 
+    event ValidationPowerTransferred(address fromUser, address toUser);
     event ArticleValidated(uint256 articleId);
 
     struct Article {
@@ -53,6 +56,9 @@ contract NewsForumContract {
         address id;
         bool valid;
         uint timestamp;
+        bool canBeValidator;
+        uint256 articlesValidatedSinceLastAppoint;
+        uint256 rewardCount;
     }
 
     constructor() {
@@ -60,8 +66,14 @@ contract NewsForumContract {
     }
 
     function addNewUser(string memory _name, string memory _email, address _wallet) external OnlyOwner {
-        users.push(User(_name, _email, _wallet, true, block.timestamp));
+        users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0));
+        validators[msg.sender] = false;
         addressToUserId[_wallet] = users.length - 1;
+        UserIdToaddress[users.length - 1] = _wallet;
+    }
+
+    function makeUserCurrentValidator() private{
+
     }
 
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {
@@ -176,6 +188,41 @@ contract NewsForumContract {
         return allArticles;
     }
 
+    function findNewValidator() private{
+        uint memory userIdOfCurrent = addressToUserId[msg.sender];
+        //iterate over all the users
+        for(uint i = 0; i < users.length; i++){
+            address memory newUser = UserIdToaddress[i];
+            if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
+                //this is a potential new validator
+                validators[newUser] == true;
+                users[i].articlesValidatedSinceLastAppoint = 0;
+
+                //remove the current caller/user from validators list
+                validators[msg.sender] = false;
+                users[userIdOfCurrent].articlesValidatedSinceLastAppoint = 0;
+                
+                //emit an event to the logs of power transfer
+                emit ValidationPowerTransferred(msg.sender, newUser);
+
+                //break the loop as we found one new validator
+                break;
+            }
+        }
+    }
+
+    function transferValidationPowerIfPossible() private{
+        //will transfer power only if new valiator is available and 10 articles validated
+        //otherwise the validation power remains with the current user/caller
+
+        uint memory userId = addressToUserId[msg.sender];
+        if(users[userId].articlesValidatedSinceLastAppoint == 10){
+            //the user has already valiated atleast 10 articles
+            //we can give the validation power to someone else if availabe
+            findNewValidator();
+        }
+    }
+
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
         require(articles[articleId].valid == true, "Article does not exist");
         require(articles[articleId].isValidated == false, "Article has already been validated");
@@ -192,5 +239,7 @@ contract NewsForumContract {
             articles[articleId].isValidated = true;
             emit ArticleValidated(articleId);
         }
+
+        transferValidationPowerIfPossible();
     }
 }
