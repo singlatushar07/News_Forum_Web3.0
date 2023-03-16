@@ -10,6 +10,8 @@ contract NewsForumContract {
     uint256 public constant NUMBER_OF_VALIDATORS = 1;
     uint256 public totalRewardCount = 0;
     uint256 public maxNumberOfActiveValidators = 10;
+    uint256 public const upvotesCountForAwardToValidator = 5;
+    
 
     address owner;
 
@@ -37,6 +39,7 @@ contract NewsForumContract {
 
     event ValidationPowerTransferred(address fromUser, address toUser);
     event ArticleValidated(uint256 articleId);
+    event eligibleValidator(address User);
 
     struct Article {
         uint id;
@@ -60,6 +63,7 @@ contract NewsForumContract {
         bool canBeValidator;
         uint256 articlesValidatedSinceLastAppoint;
         uint256 rewardCount;
+        uint256 articleAddedCount;
     }
 
     constructor() {
@@ -73,9 +77,9 @@ contract NewsForumContract {
         UserIdToaddress[users.length - 1] = _wallet;
     }
 
-    function makeUserCurrentValidator() private{
-
-    }
+    // function makeUserCurrentValidator() private{
+    //     
+    // }
 
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {
         users[addressToUserId[msg.sender]].name = _name;
@@ -93,7 +97,15 @@ contract NewsForumContract {
         articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), new address[](0), false, true, block.timestamp));
         articleToOwner[id] = msg.sender;
 
-        //giveCanBePossibleValidatorPower();
+        uint memory userId = addressToUserId[msg.sender];
+        users[userId].articleAddedCount += 1;
+        if(users[userId].articleAddedCount >= 4){
+            //this user can be a validator
+            users[userId].canBeValidator = true;
+            emit eligibleValidator(msg.sender);
+        }
+
+        
     }
 
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
@@ -105,6 +117,7 @@ contract NewsForumContract {
         articles[articleId].timestamp = block.timestamp;
     }
 
+    //function giveAwardToValidators()
     function upvoteArticle(uint articleId) external OnlyRegistered {
         require(articles[articleId].valid == true, "Article does not exist");
 
@@ -122,6 +135,7 @@ contract NewsForumContract {
         }
 
         articles[articleId].upvotes.push(msg.sender);
+        //giveAwardToValidators(articleId);
     }
 
     function downvoteArticle(uint articleId) external OnlyRegistered {
@@ -248,12 +262,18 @@ contract NewsForumContract {
         }
         
         articles[articleId].validators.push(msg.sender);
+        //increase the count of validated articles
+        uint256 memory userId = addressToUserId[msg.sender];
+        users[userId].articlesValidatedSinceLastAppoint += 1;
 
+        //if the article is validated by more than half of the total validators then it can 
+        //be shown on the forum
         if(articles[articleId].validators.length >= NUMBER_OF_VALIDATORS/2) {
             articles[articleId].isValidated = true;
             emit ArticleValidated(articleId);
         }
 
+        //check if we need to transfer the valiation power to other eligible validators
         if(maxNumberOfActiveValidators <= currentActiveValidators()){
             transferValidationPowerIfPossible();
         }
