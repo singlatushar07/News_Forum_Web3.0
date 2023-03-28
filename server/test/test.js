@@ -109,6 +109,61 @@ describe("NewsForumContract", function () {
             expect(allArticles[i].content).to.equal(articles[i].content);
             expect(allArticles[i].author).to.equal(articles[i].author);
         }
+    });
+
+    it("Should upvote and downvote an article", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const users = []
+        for (let i = 0; i < 10; i++) {
+            const signer = await ethers.getSigner(i + 2);
+            const user = { name: "user" + i, email: "tsi" + i + "@gmail.com", signer: signer };
+            users.push(user);
+            await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
+        }
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const article = { title: "title", content: "content", author: addr1.address };
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+
+        for (let i = 0; i < users.length; i++) {
+            await hardhatNewsForumContract.connect(users[i].signer).upvoteArticle(numArticles);
+        }
+        expect(await hardhatNewsForumContract.getNumberOfUpvotes(numArticles)).to.equal(users.length);
+
+        for (let i = 0; i < users.length; i++) {
+            await hardhatNewsForumContract.connect(users[i].signer).downvoteArticle(numArticles);
+        }
+        expect(await hardhatNewsForumContract.getNumberOfDownvotes(numArticles)).to.equal(0);
+
+        for (let i = 0; i < users.length; i++) {
+            await hardhatNewsForumContract.connect(users[i].signer).downvoteArticle(numArticles);
+        }
+        expect(await hardhatNewsForumContract.getNumberOfDownvotes(numArticles)).to.equal(users.length);
+    });
+
+    it("Only registered users can upvote and downvote the articles", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const users = []
+        for (let i = 0; i < 10; i++) {
+            const signer = await ethers.getSigner(i + 2);
+            const user = { name: "user" + i, email: "tsi" + i + "@gmail.com", signer: signer };
+            users.push(user);
+            if (i < 5) {
+                await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
+            }
+        }
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const article = { title: "title", content: "content", author: addr1.address };
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        for (let i = 0; i < users.length; i++) {
+            if (i >= 5) {
+                await expect(hardhatNewsForumContract.connect(users[i].signer).upvoteArticle(numArticles)).be.reverted;
+            }
+        }
+        for (let i = 0; i < users.length; i++) {
+            if (i >= 5) {
+                await expect(hardhatNewsForumContract.connect(users[i].signer).downvoteArticle(numArticles)).be.reverted;
+            }
+        }
 
     });
 });
