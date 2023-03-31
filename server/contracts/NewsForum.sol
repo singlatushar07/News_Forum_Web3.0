@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 contract NewsForumContract {
@@ -10,7 +10,7 @@ contract NewsForumContract {
     uint256 public constant NUMBER_OF_VALIDATORS = 1;
     uint256 public totalRewardCount = 0;
     uint256 public maxNumberOfActiveValidators = 10;
-    uint256 public const upvotesCountForAwardToValidator = 5;
+    uint256 public constant upvotesCountForAwardToValidator = 5;
     
 
     address owner;
@@ -97,7 +97,7 @@ contract NewsForumContract {
         articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), new address[](0), false, true, block.timestamp));
         articleToOwner[id] = msg.sender;
 
-        uint memory userId = addressToUserId[msg.sender];
+        uint  userId = addressToUserId[msg.sender];
         users[userId].articleAddedCount += 1;
         if(users[userId].articleAddedCount >= 4){
             //this user can be a validator
@@ -207,10 +207,10 @@ contract NewsForumContract {
     }
 
     function findNewValidator() private{
-        uint memory userIdOfCurrent = addressToUserId[msg.sender];
+        uint  userIdOfCurrent = addressToUserId[msg.sender];
         //iterate over all the users
         for(uint i = 0; i < users.length; i++){
-            address memory newUser = UserIdToaddress[i];
+            address  newUser = UserIdToaddress[i];
             if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
                 //this is a potential new validator
                 validators[newUser] == true;
@@ -233,7 +233,7 @@ contract NewsForumContract {
         //will transfer power only if new valiator is available and 10 articles validated
         //otherwise the validation power remains with the current user/caller
 
-        uint memory userId = addressToUserId[msg.sender];
+        uint  userId = addressToUserId[msg.sender];
         if(users[userId].articlesValidatedSinceLastAppoint == 10){
             //the user has already valiated atleast 10 articles
             //we can give the validation power to someone else if availabe
@@ -263,7 +263,7 @@ contract NewsForumContract {
         
         articles[articleId].validators.push(msg.sender);
         //increase the count of validated articles
-        uint256 memory userId = addressToUserId[msg.sender];
+        uint256  userId = addressToUserId[msg.sender];
         users[userId].articlesValidatedSinceLastAppoint += 1;
 
         //if the article is validated by more than half of the total validators then it can 
