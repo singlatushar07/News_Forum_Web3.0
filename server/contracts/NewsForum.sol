@@ -72,7 +72,9 @@ contract NewsForumContract {
     constructor() {
         owner = msg.sender;
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0));
-        articles.push(Article(0, "Invalid Article", "", address(0), new address[](0), new address[](0), new address[](0), false, false, 0));
+        articles.push(Article(0, "Invalid Article", "", address(0),
+                                new address[](0), new address[](0), new address[](0),
+                                false, false, 0, false));
     }
 
     function addNewUser(string memory _name, string memory _email, address _wallet) external OnlyOwner {
@@ -130,10 +132,10 @@ contract NewsForumContract {
 
     function giveAwardToValidators(uint articleId) private{
         for (uint i = 0; i < articles[articleId].validators.length; i++) {
-            address memory valiAd = articles[articleId].validators[i];
-            uint256 memory userId = addressToUserId[valiAd];
+            address valiAd = articles[articleId].validators[i];
+            uint256 userId = addressToUserId[valiAd];
             //reward the user with this userId
-            users[userId].rewardCount = users.rewardCount + rewardToValidatorsUponReachingUpvotes;
+            users[userId].rewardCount = users[userId].rewardCount + rewardToValidatorsUponReachingUpvotes;
             totalRewardCount = totalRewardCount + rewardToValidatorsUponReachingUpvotes;
 
             if(users[userId].rewardCount >= totalRewardCount/2){
@@ -147,11 +149,11 @@ contract NewsForumContract {
         //when half of the current active validators validate an article, then the editor gets some reward
 
         //get the editor/author of the article
-        address memory authorAddress = articles[articleId].author;
+        address authorAddress = articles[articleId].author;
         //get the userId
-        uint256 memory userId = addressToUserId[authorAddress];
+        uint256 userId = addressToUserId[authorAddress];
         //give reward to this userId
-        users.rewardCount = users.rewardCount + rewardToEditorUponArticleValidation;
+        users[userId].rewardCount = users[userId].rewardCount + rewardToEditorUponArticleValidation;
         totalRewardCount = totalRewardCount + rewardToEditorUponArticleValidation;
 
         if(users[userId].rewardCount >= totalRewardCount/2){
@@ -325,11 +327,11 @@ contract NewsForumContract {
 
         //if the article is validated by more than half of the total validators then it can
         //be shown on the forum
-        if(articles[articleId].isValidated == false && truearticles[articleId].validators.length >= NUMBER_OF_VALIDATORS/2) {
+        if(articles[articleId].isValidated == false && articles[articleId].validators.length >= NUMBER_OF_VALIDATORS/2) {
             articles[articleId].isValidated = true;
             emit ArticleValidated(articleId);
             //reward the validators who validated this article
-            rewardArticleEditor();
+            rewardArticleEditor(articleId);
         }
 
         //check if we need to transfer the valiation power to other eligible validators
