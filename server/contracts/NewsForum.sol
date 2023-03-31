@@ -60,7 +60,7 @@ contract NewsForumContract {
     struct User {
         string name;
         string email;
-        address id;
+        address userAddress;
         bool valid;
         uint timestamp;
         bool canBeValidator;
@@ -71,6 +71,8 @@ contract NewsForumContract {
 
     constructor() {
         owner = msg.sender;
+        users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0));
+        articles.push(Article(0, "Invalid Article", "", address(0), new address[](0), new address[](0), new address[](0), false, false, 0));
     }
 
     function addNewUser(string memory _name, string memory _email, address _wallet) external OnlyOwner {
@@ -86,6 +88,15 @@ contract NewsForumContract {
         users[addressToUserId[msg.sender]].timestamp = block.timestamp;
     }
 
+    function getUserCount() external view returns (uint) {
+        return users.length;
+    }
+
+    function getUser(uint userId) external view returns (User memory) {
+        require(users[userId].valid == true, "User does not exist");
+        return users[userId];
+    }
+
     function updateValidators() external OnlyOwner {
         // Logic to update validators
     }
@@ -98,7 +109,7 @@ contract NewsForumContract {
                                 false, true, block.timestamp, false));
         articleToOwner[id] = msg.sender;
 
-        uint memory userId = addressToUserId[msg.sender];
+        uint userId = addressToUserId[msg.sender];
         users[userId].articleAddedCount += 1;
         
         if(users[userId].articleAddedCount >= 4){
@@ -201,7 +212,7 @@ contract NewsForumContract {
     function getMyArticles () external OnlyRegistered view returns (Article[] memory) {
         Article[] memory myArticles = new Article[](articles.length);
         uint counter = 0;
-        for (uint i = 0; i < articles.length; i++) {
+        for (uint i = 1; i < articles.length; i++) {
             if (articles[i].author == msg.sender) {
                 myArticles[counter] = articles[i];
                 counter++;
@@ -217,11 +228,15 @@ contract NewsForumContract {
     function getNumberOfDownvotes(uint articleId) external view returns (uint) {
         return articles[articleId].downvotes.length;
     }
+    
+    function getAllArticles() external view returns (Article[] memory) {
+        return articles;
+    }
 
-    function getAllArticles () external view returns (Article[] memory) {
+    function getAllValidatedArticles () external view returns (Article[] memory) {
         Article[] memory allArticles = new Article[](articles.length);
         uint counter = 0;
-        for (uint i = 0; i < articles.length; i++) {
+        for (uint i = 1; i < articles.length; i++) {
             if (articles[i].isValidated == true) {
                 allArticles[counter] = articles[i];
                 counter++;
@@ -230,10 +245,14 @@ contract NewsForumContract {
         return allArticles;
     }
 
+    function getArticleCount () external view returns (uint) {
+        return articles.length;
+    }
+
     function getAllArticlesForValidation () external view OnlyValidator returns (Article[] memory) {
         Article[] memory allArticles = new Article[](articles.length);
         uint counter = 0;
-        for (uint i = 0; i < articles.length; i++) {
+        for (uint i = 1; i < articles.length; i++) {
             if (articles[i].isValidated == false) {
                 allArticles[counter] = articles[i];
                 counter++;
@@ -243,10 +262,10 @@ contract NewsForumContract {
     }
 
     function findNewValidator() private{
-        uint memory userIdOfCurrent = addressToUserId[msg.sender];
+        uint userIdOfCurrent = addressToUserId[msg.sender];
         //iterate over all the users
-        for(uint i = 0; i < users.length; i++){
-            address memory newUser = UserIdToaddress[i];
+        for(uint i = 1; i < users.length; i++){
+            address newUser = UserIdToaddress[i];
             if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
                 //this is a potential new validator
                 validators[newUser] == true;
@@ -269,7 +288,7 @@ contract NewsForumContract {
         //will transfer power only if new valiator is available and 10 articles validated
         //otherwise the validation power remains with the current user/caller
 
-        uint memory userId = addressToUserId[msg.sender];
+        uint userId = addressToUserId[msg.sender];
         if(users[userId].articlesValidatedSinceLastAppoint == 10){
             //the user has already valiated atleast 10 articles
             //we can give the validation power to someone else if availabe
@@ -278,13 +297,13 @@ contract NewsForumContract {
     }
 
     function currentActiveValidators() private returns (uint256){
-        uint256 count = 0;
-        for(uint i = 0; i < validators.length; i++){
-            if(validators[i] == true){
-                count += 1;
-            }
-        }
-        return count;
+        // uint256 count = 0;
+        // for(uint i = 0; i < validators.length; i++){
+        //     if(validators[i] == true){
+        //         count += 1;
+        //     }
+        // }
+        // return count;
     }
 
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
@@ -301,7 +320,7 @@ contract NewsForumContract {
         
         articles[articleId].validators.push(msg.sender);
         //increase the count of validated articles
-        uint256 memory userId = addressToUserId[msg.sender];
+        uint256 userId = addressToUserId[msg.sender];
         users[userId].articlesValidatedSinceLastAppoint += 1;
 
         //if the article is validated by more than half of the total validators then it can
