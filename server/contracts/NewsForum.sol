@@ -10,7 +10,9 @@ contract NewsForumContract {
     uint256 public constant NUMBER_OF_VALIDATORS = 1;
     uint256 public totalRewardCount = 0;
     uint256 public maxNumberOfActiveValidators = 10;
-    uint256 public const upvotesCountForAwardToValidator = 5;
+    uint256 public constant upvotesCountForAwardToValidator = 5;
+    uint256 public constant rewardToEditorUponArticleValidation = 1;
+    uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
     
 
     address owner;
@@ -52,6 +54,7 @@ contract NewsForumContract {
         bool isValidated;
         bool valid;
         uint timestamp;
+        bool validatorsRewardedUponUpvotes;
     }
 
     struct User {
@@ -77,10 +80,6 @@ contract NewsForumContract {
         UserIdToaddress[users.length - 1] = _wallet;
     }
 
-    // function makeUserCurrentValidator() private{
-    //     
-    // }
-
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {
         users[addressToUserId[msg.sender]].name = _name;
         users[addressToUserId[msg.sender]].email = _email;
@@ -94,18 +93,19 @@ contract NewsForumContract {
 
     function addArticle(string memory _title, string memory _content) external OnlyRegistered {
         uint id = articles.length;
-        articles.push(Article(id, _title, _content, msg.sender, new address[](0), new address[](0), new address[](0), false, true, block.timestamp));
+        articles.push(Article(id, _title, _content, msg.sender,
+                                new address[](0), new address[](0), new address[](0),
+                                false, true, block.timestamp, false));
         articleToOwner[id] = msg.sender;
 
         uint memory userId = addressToUserId[msg.sender];
         users[userId].articleAddedCount += 1;
+        
         if(users[userId].articleAddedCount >= 4){
             //this user can be a validator
             users[userId].canBeValidator = true;
             emit eligibleValidator(msg.sender);
-        }
-
-        
+        }        
     }
 
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
@@ -117,7 +117,38 @@ contract NewsForumContract {
         articles[articleId].timestamp = block.timestamp;
     }
 
-    //function giveAwardToValidators()
+    function giveAwardToValidators(uint articleId) private{
+        for (uint i = 0; i < articles[articleId].validators.length; i++) {
+            address memory valiAd = articles[articleId].validators[i];
+            uint256 memory userId = addressToUserId[valiAd];
+            //reward the user with this userId
+            users[userId].rewardCount = users.rewardCount + rewardToValidatorsUponReachingUpvotes;
+            totalRewardCount = totalRewardCount + rewardToValidatorsUponReachingUpvotes;
+
+            if(users[userId].rewardCount >= totalRewardCount/2){
+                users[userId].canBeValidator = true;
+                emit eligibleValidator(UserIdToaddress[userId]);
+            }
+        }
+    }
+
+    function rewardArticleEditor(uint articleId) private {
+        //when half of the current active validators validate an article, then the editor gets some reward
+
+        //get the editor/author of the article
+        address memory authorAddress = articles[articleId].author;
+        //get the userId
+        uint256 memory userId = addressToUserId[authorAddress];
+        //give reward to this userId
+        users.rewardCount = users.rewardCount + rewardToEditorUponArticleValidation;
+        totalRewardCount = totalRewardCount + rewardToEditorUponArticleValidation;
+
+        if(users[userId].rewardCount >= totalRewardCount/2){
+            users[userId].canBeValidator = true;
+            emit eligibleValidator(UserIdToaddress[userId]);
+        }
+    }
+
     function upvoteArticle(uint articleId) external OnlyRegistered {
         require(articles[articleId].valid == true, "Article does not exist");
 
@@ -135,7 +166,12 @@ contract NewsForumContract {
         }
 
         articles[articleId].upvotes.push(msg.sender);
-        //giveAwardToValidators(articleId);
+
+        if(articles[articleId].validatorsRewardedUponUpvotes == false && articles[articleId].upvotes.length == upvotesCountForAwardToValidator){
+            //this reward is given only once when the upvotes reach a certain count
+            giveAwardToValidators(articleId);
+            articles[articleId].validatorsRewardedUponUpvotes = true;
+        }
     }
 
     function downvoteArticle(uint articleId) external OnlyRegistered {
@@ -252,6 +288,8 @@ contract NewsForumContract {
     }
 
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
+        //this function will be called when an "active validator" clicks on validate article button after reading the article
+
         require(articles[articleId].valid == true, "Article does not exist");
         require(articles[articleId].isValidated == false, "Article has already been validated");
         
@@ -266,11 +304,13 @@ contract NewsForumContract {
         uint256 memory userId = addressToUserId[msg.sender];
         users[userId].articlesValidatedSinceLastAppoint += 1;
 
-        //if the article is validated by more than half of the total validators then it can 
+        //if the article is validated by more than half of the total validators then it can
         //be shown on the forum
-        if(articles[articleId].validators.length >= NUMBER_OF_VALIDATORS/2) {
+        if(articles[articleId].isValidated == false && truearticles[articleId].validators.length >= NUMBER_OF_VALIDATORS/2) {
             articles[articleId].isValidated = true;
             emit ArticleValidated(articleId);
+            //reward the validators who validated this article
+            rewardArticleEditor();
         }
 
         //check if we need to transfer the valiation power to other eligible validators
