@@ -66,7 +66,7 @@ contract NewsForumContract {
         bool canBeValidator;
         uint256 articlesValidatedSinceLastAppoint;
         uint256 rewardCount;
-        uint256 articleAddedCount;
+        uint256 articleValidatedCount;
     }
 
     constructor() {
@@ -111,14 +111,14 @@ contract NewsForumContract {
                                 false, true, block.timestamp, false));
         articleToOwner[id] = msg.sender;
 
-        uint userId = addressToUserId[msg.sender];
-        users[userId].articleAddedCount += 1;
+        // uint userId = addressToUserId[msg.sender];
+        // users[userId].articleValidatedCount += 1;
         
-        if(users[userId].articleAddedCount >= 4){
-            //this user can be a validator
-            users[userId].canBeValidator = true;
-            emit eligibleValidator(msg.sender);
-        }        
+        // if(users[userId].articleValidatedCount >= 4){
+        //     //this user can be a validator
+        //     users[userId].canBeValidator = true;
+        //     emit eligibleValidator(msg.sender);
+        // }        
     }
 
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
@@ -319,7 +319,7 @@ contract NewsForumContract {
                 revert("You have already validated this article");
             }
         }
-        
+
         articles[articleId].validators.push(msg.sender);
         //increase the count of validated articles
         uint256 userId = addressToUserId[msg.sender];
@@ -332,6 +332,18 @@ contract NewsForumContract {
             emit ArticleValidated(articleId);
             //reward the validators who validated this article
             rewardArticleEditor(articleId);
+
+
+            //fetch the user who edited/wrote this article which the msg.sender just validated
+            address editorAddress = articles[articleId].author;
+            uint256 editorId = addressToUserId[editorAddress];
+            //incrementing the count of articles which are validated by atleast half of the validators and are written by the same author/editor
+            users[editorId].articleValidatedCount++;
+            if(users[editorId].canBeValidator == false && users[editorId].articleValidatedCount >= 4){
+                //give the powers 
+                users[editorId].canBeValidator = true;
+                emit eligibleValidator(UserIdToaddress[editorId]);
+            }
         }
 
         //check if we need to transfer the valiation power to other eligible validators
