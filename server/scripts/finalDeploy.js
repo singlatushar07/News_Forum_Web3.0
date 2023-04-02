@@ -1,6 +1,6 @@
 const hre = require("hardhat");
 async function main() {
-    const chai = await hre.ethers.getContractFactory("NewsForum");
+    const chai = await hre.ethers.getContractFactory("NewsForumContract");
     const contract = await chai.deploy(); //instance of contract
     await contract.deployed();
 }

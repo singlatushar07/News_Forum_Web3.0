@@ -1,5 +1,6 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("dotenv").config();
+import HardhatTools from "@nomicfoundation/hardhat-toolbox"
+import dotenv from "dotenv"
+dotenv.config();
 /** @type import('hardhat/config').HardhatUserConfig */
 const GOERLI_URL = process.env.GOERLI_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -8,7 +9,7 @@ module.exports = {
   networks:{
     goerli:{
       url:GOERLI_URL,
-      accounts:{PRIVATE_KEY}
+      accounts:[PRIVATE_KEY]
     }
   }
 };

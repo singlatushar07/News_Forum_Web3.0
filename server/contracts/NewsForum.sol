@@ -242,13 +242,13 @@ contract NewsForumContract {
     }
 
     function currentActiveValidators() private returns (uint256){
-        uint256 count = 0;
-        for(uint i = 0; i < validators.length; i++){
-            if(validators[i] == true){
-                count += 1;
-            }
-        }
-        return count;
+        // uint256 count = 0;
+        // for(uint i = 0; i < validators.length; i++){
+        //     if(validators[i] == true){
+        //         count += 1;
+        //     }
+        // }
+        // return count;
     }
 
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
