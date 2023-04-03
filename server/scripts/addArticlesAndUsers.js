@@ -28,11 +28,21 @@ async function getAllUsers(newsForum){
 }
 
 async function main () {
+    // Our code will go here
+    // Retrieve accounts from the local node
+
     //this connects to the localhost directly
     const provider = new ethers.providers.JsonRpcProvider();
 
     const accounts = await ethers.provider.listAccounts();
     //console.log(accounts);
+
+    // The provider also allows signing transactions to
+    // send ether and pay to change state within the blockchain.
+    // For this, we need the account signer...
+    // const signer = provider.getSigner(accounts[0]);
+    // console.log(typeof(signer));
+    // console.log(signer.address);
 
     const privateKey = '0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e';
     const walletOwner = new ethers.Wallet(privateKey, provider);
@@ -46,17 +56,19 @@ async function main () {
     const newsForum = await NewsForum.attach(address);
     const contractWithSigner = await newsForum.connect(walletOwner);
 
-    //await getAllArticles(newsForum);
-    //await getAllUsers(newsForum);
+    await contractWithSigner.addNewUser("Aashish Patel", "a@gmail.com", wallet1.address);
+    await contractWithSigner.addNewUser("User2", "a@gmail.com", wallet2.address);
+    await newsForum.connect(wallet1).addArticle("Article 1 by Aashish", "Content 1");
+    await newsForum.connect(wallet2).addArticle("Article 2 by User 2", "Content 2");
+
+    await getAllArticles(newsForum);
+    await getAllUsers(newsForum);
     
     // const userCount = await contractWithSigner.getUserCount();
     // console.log(userCount);
     // const user = await contractWithSigner.articles();
     // console.log(user);
-    //await contractWithSigner.validateArticle(2);
-    await newsForum.connect(wallet1).upvoteArticle(2);
-    await newsForum.connect(wallet2).upvoteArticle(1);
-    //await contractWithSigner.validateArticle(2);
+    //await contractWithSigner.validateArticle(1);
     // const tx = await contractWithSigner.validateArticle(1);
     // await tx.wait();
     // console.log(tx.events);
