@@ -3,7 +3,7 @@ const ethers = require('ethers');
 const provider = new ethers.providers.JsonRpcProvider();
 const NewsForumContract = require('/Users/aashishpiitk/News_Forum_Web3.0/server/artifacts/contracts/NewsForum.sol/NewsForumContract.json');
 const contractABI = NewsForumContract.abi;
-const contractAddress = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
+const contractAddress = '0x6d925938Edb8A16B3035A4cF34FAA090f490202a';
 const newsForum = new ethers.Contract(contractAddress, contractABI, provider);
 
 // const address = '0x73511669fd4dE447feD18BB79bAFeAC93aB7F31f';
@@ -27,6 +27,6 @@ newsForum.on('eligibleValidator', (userAd) => {
 });
 
 newsForum.on('RewardSummary', (receiver, receiverRewards, totalReward) => {
-    console.log(`User -> ${receiver} has totalRewards -> {receiverRewards}, and totalRewards with forum are -> {totalReward}`);
+    console.log(`User -> ${receiver} has totalRewards -> ${receiverRewards}, and totalRewards with forum are -> ${totalReward}`);
 });
   

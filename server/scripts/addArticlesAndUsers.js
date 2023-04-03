@@ -51,7 +51,7 @@ async function main () {
     const privateKey2 = "0xd2cfd99246aa9aee0341281016c1fe0ddbe56b482bd1f02718dd0dc7b1aa9372";
     const wallet2 = new ethers.Wallet(privateKey2, provider);
 
-    const address = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
+    const address = '0x6d925938Edb8A16B3035A4cF34FAA090f490202a';
     const NewsForum = await ethers.getContractFactory('NewsForumContract');
     const newsForum = await NewsForum.attach(address);
     const contractWithSigner = await newsForum.connect(walletOwner);

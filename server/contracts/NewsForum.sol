@@ -3,7 +3,6 @@ pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
 
-
 contract NewsForumContract {
     uint256 public constant VALIDATIONS_REQUIRED = 10;
     //uint256 public constant VALIDATION_REWARD = 10;
@@ -76,15 +75,24 @@ contract NewsForumContract {
     constructor() {
         owner = msg.sender;
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0));
-        users.push(User("Owner", "owner@gmail.com", msg.sender, true, block.timestamp, true, 0, 0, 0));
-        validators[msg.sender] = true;
+        addNewUser("Owner", "owner@gmail.com", msg.sender);
+        // users.push(User("Owner", "owner@gmail.com", msg.sender, true, block.timestamp, true, 0, 0, 0));
+        // validators[msg.sender] = true;
 
         articles.push(Article(0, "Invalid Article", "", address(0),
                                 new address[](0), new address[](0), new address[](0),
                                 false, false, 0, false));
     }
 
-    function addNewUser(string memory _name, string memory _email, address _wallet) external OnlyOwner {
+    function isValidator() external view returns (bool) {
+        return validators[msg.sender];
+    }
+
+    function setOwnerAsValidator() public OnlyOwner {
+        validators[msg.sender] = true;
+    }
+    
+    function addNewUser(string memory _name, string memory _email, address _wallet) public OnlyOwner {
         users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0, 0));
         validators[msg.sender] = false;
         addressToUserId[_wallet] = users.length - 1;
@@ -267,7 +275,7 @@ contract NewsForumContract {
             address newUser = UserIdToaddress[i];
             if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
                 //this is a potential new validator
-                validators[newUser] == true;
+                validators[newUser] = true;
                 users[i].articlesValidatedSinceLastAppoint = 0;
 
                 //remove the current caller/user from validators list
@@ -305,7 +313,7 @@ contract NewsForumContract {
         return count;
     }
 
-    function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
+    function validateArticle(uint articleId) external OnlyRegistered {
         //this function will be called when an "active validator" clicks on validate article button after reading the article
 
         require(articles[articleId].valid == true, "Article does not exist");

@@ -11,6 +11,7 @@ describe("NewsForumContract", function () {
         await hardhatNewsForumContract.deployed();
         const user1 = { name: "tushadsar", email: "tsingdas@gmail.com", address: addr1.address };
         await hardhatNewsForumContract.addNewUser(user1.name, user1.email, user1.address);
+        //use of a fixture
         return { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2, addr3, addr4 };
     }
 
@@ -164,6 +165,37 @@ describe("NewsForumContract", function () {
                 await expect(hardhatNewsForumContract.connect(users[i].signer).downvoteArticle(numArticles)).be.reverted;
             }
         }
-
+        console.log("Yo inside the last function")
     });
+
+    it("Should validate an article", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const article = { title: "title", content: "content", author: addr1.address };
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        const article1 = await hardhatNewsForumContract.getArticleById(numArticles);
+        // console.log(article1);
+        console.log(await hardhatNewsForumContract.connect(owner).isValidator());
+        console.log(await hardhatNewsForumContract.connect(owner).setOwnerAsValidator());
+        console.log(await hardhatNewsForumContract.connect(owner).isValidator());
+        await hardhatNewsForumContract.connect(owner).validateArticle(numArticles);
+        const validatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
+        expect(validatedArticle.isValidated).to.equal(true);
+    });
+
+    //Test 1
+    //Add 4 articles from same user account and see if the user gets validation power
+    //it("Users should get canBeValidator powers when 4 articles published by them", )
+
+    //Test 2
+    //Editor gets a reward when an article published by him/her gets validated by atleast half of the validators.
+    // it(){
+
+    // }
+
+    //Test 3
+    //The author of the article should not be able to validate an article, even if he is a validator
+
+    //Test 4
+    
 });
