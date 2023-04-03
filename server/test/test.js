@@ -47,7 +47,7 @@ describe("NewsForumContract", function () {
     it("Unauthorized user should not be able to update a user", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
         const newUserDetails = { name: "tushar", email: "tsin@gmail.com", address: addr1.address };
-        await expect(hardhatNewsForumContract.connect(owner).updateUser(newUserDetails.name, newUserDetails.email)).to.be.revertedWith("You must be registered to perform the action");
+        await expect(hardhatNewsForumContract.connect(addr2).updateUser(newUserDetails.name, newUserDetails.email)).to.be.revertedWith("You must be registered to perform the action");
     });
 
     it("Should add an article", async function () {
@@ -165,7 +165,6 @@ describe("NewsForumContract", function () {
                 await expect(hardhatNewsForumContract.connect(users[i].signer).downvoteArticle(numArticles)).be.reverted;
             }
         }
-        console.log("Yo inside the last function")
     });
 
     it("Should validate an article", async function () {
@@ -175,9 +174,6 @@ describe("NewsForumContract", function () {
         await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
         const article1 = await hardhatNewsForumContract.getArticleById(numArticles);
         // console.log(article1);
-        console.log(await hardhatNewsForumContract.connect(owner).isValidator());
-        console.log(await hardhatNewsForumContract.connect(owner).setOwnerAsValidator());
-        console.log(await hardhatNewsForumContract.connect(owner).isValidator());
         await hardhatNewsForumContract.connect(owner).validateArticle(numArticles);
         const validatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
         expect(validatedArticle.isValidated).to.equal(true);
