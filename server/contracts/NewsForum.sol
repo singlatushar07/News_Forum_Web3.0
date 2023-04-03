@@ -75,6 +75,7 @@ contract NewsForumContract {
 
     constructor() {
         owner = msg.sender;
+        users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0));
         users.push(User("Owner", "owner@gmail.com", msg.sender, true, block.timestamp, true, 0, 0, 0));
         validators[msg.sender] = true;
 
@@ -96,9 +97,9 @@ contract NewsForumContract {
         users[addressToUserId[msg.sender]].timestamp = block.timestamp;
     }
 
-    // function getUserCount() external view returns (uint) {
-    //     return users.length;
-    // }
+    function getUserCount() external view returns (uint) {
+        return users.length;
+    }
 
     function getUser(uint userId) external view returns (User memory) {
         require(users[userId].valid == true, "User does not exist");
@@ -172,11 +173,11 @@ contract NewsForumContract {
         articles[articleId].upvotes.push(msg.sender);
         emit ArticleUpvoted(articleId, msg.sender);
 
-        // if(articles[articleId].validatorsRewardedUponUpvotes == false && articles[articleId].upvotes.length == upvotesCountForAwardToValidator){
-        //     //this reward is given only once when the upvotes reach a certain count
-        //     giveAwardToValidators(articleId);
-        //     articles[articleId].validatorsRewardedUponUpvotes = true;
-        // }
+        if(articles[articleId].validatorsRewardedUponUpvotes == false && articles[articleId].upvotes.length == upvotesCountForAwardToValidator){
+            //this reward is given only once when the upvotes reach a certain count
+            giveAwardToValidators(articleId);
+            articles[articleId].validatorsRewardedUponUpvotes = true;
+        }
     }
 
     function downvoteArticle(uint articleId) external OnlyRegistered {
@@ -259,50 +260,50 @@ contract NewsForumContract {
         return allArticles;
     }
 
-    // function findNewValidator() private{
-    //     uint userIdOfCurrent = addressToUserId[msg.sender];
-    //     //iterate over all the users
-    //     for(uint i = 1; i < users.length; i++){
-    //         address newUser = UserIdToaddress[i];
-    //         if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
-    //             //this is a potential new validator
-    //             validators[newUser] == true;
-    //             users[i].articlesValidatedSinceLastAppoint = 0;
+    function findNewValidator() private{
+        uint userIdOfCurrent = addressToUserId[msg.sender];
+        //iterate over all the users
+        for(uint i = 1; i < users.length; i++){
+            address newUser = UserIdToaddress[i];
+            if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
+                //this is a potential new validator
+                validators[newUser] == true;
+                users[i].articlesValidatedSinceLastAppoint = 0;
 
-    //             //remove the current caller/user from validators list
-    //             validators[msg.sender] = false;
-    //             users[userIdOfCurrent].articlesValidatedSinceLastAppoint = 0;
+                //remove the current caller/user from validators list
+                validators[msg.sender] = false;
+                users[userIdOfCurrent].articlesValidatedSinceLastAppoint = 0;
                 
-    //             //emit an event to the logs of power transfer
-    //             emit ValidationPowerTransferred(msg.sender, newUser);
+                //emit an event to the logs of power transfer
+                emit ValidationPowerTransferred(msg.sender, newUser);
 
-    //             //break the loop as we found one new validator
-    //             break;
-    //         }
-    //     }
-    // }
+                //break the loop as we found one new validator
+                break;
+            }
+        }
+    }
 
-    // function transferValidationPowerIfPossible() private{
-    //     //will transfer power only if new valiator is available and 10 articles validated
-    //     //otherwise the validation power remains with the current user/caller
+    function transferValidationPowerIfPossible() private{
+        //will transfer power only if new valiator is available and 10 articles validated
+        //otherwise the validation power remains with the current user/caller
 
-    //     uint userId = addressToUserId[msg.sender];
-    //     if(users[userId].articlesValidatedSinceLastAppoint >= 10 && msg.sender != owner){
-    //         //the user has already valiated atleast 10 articles
-    //         //we can give the validation power to someone else if availabe
-    //         findNewValidator();
-    //     }
-    // }
+        uint userId = addressToUserId[msg.sender];
+        if(users[userId].articlesValidatedSinceLastAppoint >= 10 && msg.sender != owner){
+            //the user has already valiated atleast 10 articles
+            //we can give the validation power to someone else if availabe
+            findNewValidator();
+        }
+    }
 
-    // function currentActiveValidators() private view returns (uint256){
-    //     uint256 count = 0;
-    //     for(uint i = 0; i < users.length; i++){
-    //         if(validators[users[i].userAddress] == true){
-    //             count += 1;
-    //         }
-    //     }
-    //     return count;
-    // }
+    function currentActiveValidators() private view returns (uint256){
+        uint256 count = 0;
+        for(uint i = 0; i < users.length; i++){
+            if(validators[users[i].userAddress] == true){
+                count += 1;
+            }
+        }
+        return count;
+    }
 
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
         //this function will be called when an "active validator" clicks on validate article button after reading the article
@@ -347,8 +348,8 @@ contract NewsForumContract {
         }
 
         //check if we need to transfer the valiation power to other eligible validators
-        // if(maxNumberOfActiveValidators <= currentActiveValidators()){
-        //     transferValidationPowerIfPossible();
-        // }
+        if(maxNumberOfActiveValidators <= currentActiveValidators()){
+            transferValidationPowerIfPossible();
+        }
     }
 }
