@@ -4,15 +4,25 @@ import { useEffect } from 'react';
 
 const Forum = ({state}) => {
   const [Articles,setArticles] = useState([]);
-  const contract = {state};
-
+  const {contract} = state;
   useEffect(() => {
     const ArticlesMessage = async () => {
-      const Articles = await contract.getMyArticles();
-      setArticles(Articles); 
+        // const contract = {state};
+        console.log("X");
+        const x  = await contract.getAllArticles();
+        console.log(x);
+        setArticles(x);
+        // console.log(Articles);
+        console.log("x");
+     
     };
     contract && ArticlesMessage();
   }, [contract]);
+  // const ArticlesMessage = async (event) => {
+  //      event.preventDefault();
+  //       const x = await contract.getAllArticles();
+  //       setArticles(x); 
+  //     };
   const handleSubmit = (e)=>{
     e.preventDefault();
   }
@@ -53,6 +63,7 @@ const Forum = ({state}) => {
   </div>
 </nav>
     <form action="" className='form-group' onSubmit={handleSubmit}>
+      <h1>Add an Article</h1>
       <div>
       <input type="title" placeholder='title' className='form-control mt-3' onChange={e=>{
         setTitle(e.target.value)
@@ -60,21 +71,29 @@ const Forum = ({state}) => {
       <textarea name="content" id="" cols="30" rows="10" placeholder='content' className='form-control' onChange={e=>{
         setContent(e.target.value)
       }}></textarea>
-      <button className='mt-3' onClick={addArticle}>Add</button>
+      <button className=' btn btn-primary mt-3' onClick={addArticle}>Add</button>
       </div>
     </form>
-    <p>Articles</p>
+    {/* <button onClick={ArticlesMessage}> Get </button> */}
     {
       Articles.map((Article)=>{
         return (
           <>
+          <div class="border">
+          <ul class="list-inline ">
+  <li class="list-inline-item ">{Article.author}</li>
+  <li class="list-inline-item ml-3">{new Date(Article.timestamp * 1000).toLocaleString()}</li>
+  <li class="list-inline-item ml-3">{localStorage.getItem("username")}</li>
+  <li class="list-inline-item ml-3">{localStorage.getItem("email")}</li>
+</ul>
+<blockquote class="blockquote">
+  <p class="mb-0">{Article.content}</p>
+  <footer class="blockquote-footer"> <cite title="Source Title">{Article.title}</cite></footer>
+</blockquote>
+<button type="button" class="btn btn-primary">Upvote</button>
+<button type="button" class="btn btn-primary ml-2">Downvote</button>
+          </div>
 
-          <p>
-            {Article.title}
-          </p>
-          <p>
-            {Article.content}
-          </p>
           </>
         )
         })}

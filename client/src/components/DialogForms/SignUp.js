@@ -35,9 +35,14 @@ export default function SignUp({state}) {
     localStorage.setItem("email",email);
     localStorage.setItem("address",address);
     // const amount = { value: ethers.utils.parseEther("0.001") };
-    const transaction = await contract.addNewUser(username, email, address);
-    await transaction.wait();
-    console.log("Transaction is done");
+    try{
+        const transaction = await contract.addNewUser(username, email, address);
+        await transaction.wait();
+        console.log("Transaction is done");
+
+    }catch(error){
+        console.log(error);
+    }
     nav("/home")
       }
     return (

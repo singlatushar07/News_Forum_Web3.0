@@ -9,43 +9,51 @@ import SignUp from './components/DialogForms/SignUp';
 import abi from "./contract/NewsForum.json";
 import { useState, useEffect } from "react";
 import  {ethers}  from "ethers";
+import { useNavigate } from "react-router-dom";
 function App() {
-  const [state, setState] = useState({
-    provider: null,
-    signer: null,
-    contract: null,
-  });
-  const [account, setAccount] = useState("None");
+  const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+  const [state,setState] = useState({
+    provider:null,
+    signer:null,
+    contract:null
+  })
+  const [account,setAccount] = useState("none");
+  // const nav = useNavigate();
   useEffect(()=>{
-    const connectWallet = async ()=>{
-      const contractAddress = "0xd6ae641648730c6429998c1ac58563b35adfc4a6"
-      const contractABI = abi.abi;
-      try{
-        const {ethereum} = window;
-        if(ethereum){
-          console.log("hello");
-          const account = await ethereum.request({
-            method:"eth_requestAccounts",
-          })
-          const provider = new ethers.providers.Web3Provider(ethereum);
+    const {ethereum} = window;
+    try{
+      if(ethereum){
+        const connectWallet = async ()=>{
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const contract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
+        const contract = new ethers.Contract(contractAddress, abi.abi, signer);
+        const account = await ethereum.request({
+                  method:"eth_requestAccounts",
+        })
+        window.ethereum.on("chainChanged", () => {
+          window.location.reload();
+        });
+
+        window.ethereum.on("accountsChanged", () => {
+          // nav("/register")
+          window.location.reload();
+        });
         setAccount(account);
-        setState({ provider, signer, contract });
+        setState({provider,signer,contract});
+        console.log(state);
+      }
+      connectWallet();
       }else{
-        alert("Please install metamask");
-      } 
+        alert("install wallet");
+      }
     }catch(error){
       console.log(error);
     }
+    console.log(account);
+    console.log(state.signer);
+    console.log(state.signer);
   }
-  connectWallet();
-  console.log(state);
-  },[])
+  ,[])
   return (
     <div className="App">
       <BrowserRouter>
