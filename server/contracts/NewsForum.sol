@@ -23,8 +23,6 @@ contract NewsForumContract {
     Article[] public articles;
     mapping(uint256 => address) articleToOwner;
 
-    mapping (address => bool) validators;
-
     modifier OnlyOwner {
         require(msg.sender == owner, "Only owner can call this function");
         _;
@@ -34,7 +32,7 @@ contract NewsForumContract {
         _;
     }
     modifier OnlyValidator {
-        require(validators[msg.sender] == true, "You must be a validator to perform the action");
+        require(users[addressToUserId[msg.sender]].isValidator == true, "You must be a validator to perform the action");
         _;
     }
 
@@ -70,31 +68,21 @@ contract NewsForumContract {
         uint256 articlesValidatedSinceLastAppoint;
         uint256 rewardCount;
         uint256 articleValidatedCount;
+        bool isValidator;
     }
 
     constructor() {
         owner = msg.sender;
-        users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0));
+        users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, false));
         addNewUser("Owner", "owner@gmail.com", msg.sender);
-        // users.push(User("Owner", "owner@gmail.com", msg.sender, true, block.timestamp, true, 0, 0, 0));
-        // validators[msg.sender] = true;
-
+        users[1].isValidator = true;
         articles.push(Article(0, "Invalid Article", "", address(0),
                                 new address[](0), new address[](0), new address[](0),
                                 false, false, 0, false));
     }
-
-    function isValidator() external view returns (bool) {
-        return validators[msg.sender];
-    }
-
-    function setOwnerAsValidator() public OnlyOwner {
-        validators[msg.sender] = true;
-    }
     
     function addNewUser(string memory _name, string memory _email, address _wallet) public OnlyOwner {
-        users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0, 0));
-        validators[msg.sender] = false;
+        users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0, 0, false));
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
     }
@@ -273,13 +261,13 @@ contract NewsForumContract {
         //iterate over all the users
         for(uint i = 1; i < users.length; i++){
             address newUser = UserIdToaddress[i];
-            if(i != userIdOfCurrent && users[i].canBeValidator == true && validators[newUser] == false){
+            if(i != userIdOfCurrent && users[i].canBeValidator == true &&  users[i].isValidator == false){
                 //this is a potential new validator
-                validators[newUser] = true;
+                users[i].isValidator = true;
                 users[i].articlesValidatedSinceLastAppoint = 0;
 
                 //remove the current caller/user from validators list
-                validators[msg.sender] = false;
+                users[addressToUserId[msg.sender]].isValidator = false;
                 users[userIdOfCurrent].articlesValidatedSinceLastAppoint = 0;
                 
                 //emit an event to the logs of power transfer
@@ -306,14 +294,14 @@ contract NewsForumContract {
     function currentActiveValidators() private view returns (uint256){
         uint256 count = 0;
         for(uint i = 0; i < users.length; i++){
-            if(validators[users[i].userAddress] == true){
+            if(users[i].isValidator == true){
                 count += 1;
             }
         }
         return count;
     }
 
-    function validateArticle(uint articleId) external OnlyRegistered OnlyValidator{
+    function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
         //this function will be called when an "active validator" clicks on validate article button after reading the article
 
         require(articles[articleId].valid == true, "Article does not exist");
