@@ -313,7 +313,7 @@ contract NewsForumContract {
         return count;
     }
 
-    function validateArticle(uint articleId) external OnlyRegistered {
+    function validateArticle(uint articleId) external OnlyRegistered OnlyValidator{
         //this function will be called when an "active validator" clicks on validate article button after reading the article
 
         require(articles[articleId].valid == true, "Article does not exist");

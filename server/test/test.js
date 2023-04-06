@@ -168,7 +168,7 @@ describe("NewsForumContract", function () {
         console.log("Yo inside the last function")
     });
 
-    it("Should validate an article", async function () {
+    it("Should validate an article if the user is an Active Validator", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: addr1.address };
@@ -182,6 +182,34 @@ describe("NewsForumContract", function () {
         const validatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
         expect(validatedArticle.isValidated).to.equal(true);
     });
+
+    it("Should give reward to the editor when an article gets validated", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+    });
+
+    it("Should not allow the author of the article to validate the article", async function () {
+    });
+
+    it("Should give reward to validators once the article reaches certain number of upvotes", async function () {
+    });
+
+    it("Should not validate an article if the user is not an Active Validator", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const article = { title: "title", content: "content", author: addr1.address };
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        const article1 = await hardhatNewsForumContract.getArticleById(numArticles);
+        // console.log(article1);
+        console.log(await hardhatNewsForumContract.connect(owner).isValidator());
+        //console.log(await hardhatNewsForumContract.connect(owner).setOwnerAsValidator());
+        //console.log(await hardhatNewsForumContract.connect(owner).isValidator());
+        await expect(hardhatNewsForumContract.connect(owner).validateArticle(numArticles).to.be.revertedWith("You must be a validator to perform the action"));
+        //await hardhatNewsForumContract.connect(owner).validateArticle(numArticles);
+        //const validatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
+        //expect(validatedArticle.isValidated).to.equal(true);
+    });
+
+    
 
     //Test 1
     //Add 4 articles from same user account and see if the user gets validation power
