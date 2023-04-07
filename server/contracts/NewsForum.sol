@@ -9,7 +9,7 @@ contract NewsForumContract {
     uint256 public constant NUMBER_OF_VALIDATORS = 3;
     uint256 public totalRewardCount = 0;
     uint256 public maxNumberOfActiveValidators = 10;
-    uint256 public constant upvotesCountForAwardToValidator = 5;
+    uint256 public constant upvotesCountForAwardToValidator = 3;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
     uint256 public constant minArticleValidationsToGetValidatorPower = 4;
@@ -43,6 +43,7 @@ contract NewsForumContract {
     event TryGivingPower(uint256 articleId, address author);
     event ArticleUpvoted(uint256 articleId, address upvoter);
     event RewardSummary(address receiver, uint256 receiverRewards, uint256 totalReward);
+    event NewActiveValidatorAdded(address validator);
 
     struct Article {
         uint id;
@@ -73,9 +74,13 @@ contract NewsForumContract {
 
     constructor() {
         owner = msg.sender;
+        //pushing an invalid user to do some specific tests on the contract
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, false));
+        //addign the owner as the first user which has validator rights
         addNewUser("Owner", "owner@gmail.com", msg.sender);
         users[1].isValidator = true;
+        users[1].canBeValidator = true;
+
         articles.push(Article(0, "Invalid Article", "", address(0),
                                 new address[](0), new address[](0), new address[](0),
                                 false, false, 0, false));
@@ -146,7 +151,11 @@ contract NewsForumContract {
 
         if(users[userId].rewardCount >= totalRewardCount/2){
             users[userId].canBeValidator = true;
-            emit eligibleValidator(UserIdToaddress[userId]);
+            if(currentActiveValidators() < maxNumberOfActiveValidators){
+                users[userId].isValidator = true;
+                emit NewActiveValidatorAdded(authorAddress);
+            }
+            emit eligibleValidator(authorAddress);
         }
     }
 
@@ -302,7 +311,7 @@ contract NewsForumContract {
     }
 
     function validateArticle(uint articleId) external OnlyRegistered OnlyValidator {
-        //this function will be called when an "active validator" clicks on validate article button after reading the article
+        //this function will be called when an "active vƒalidator" clicks on validate article button after reading the article
 
         require(articles[articleId].valid == true, "Article does not exist");
         require(articles[articleId].isValidated == false, "Article has already been validated");
