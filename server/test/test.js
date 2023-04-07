@@ -238,19 +238,19 @@ describe("NewsForumContract", function () {
 
     });
 
-    it("Should give reward to validators once the article reaches certain number of upvotes", async function () {
-        //validate the article by owner, user1 and user2
-        //but all of them should have validation power to be able to validate an article.
-        //need to give them the validation power artficially
-        //or we can have one article each by user1 and user2, validate those by owner so that user1 and user2 get validation power
-        //use this validation 
-        //then each of owner, user1 and user2 upvote an article by user3(which can be validated by any of the three validators)
-        //when three upvotes reached on this article by user 3, all the validators of this article shold get the reward
+    // it("Should give reward to validators once the article reaches certain number of upvotes", async function () {
+    //     //validate the article by owner, user1 and user2
+    //     //but all of them should have validation power to be able to validate an article.
+    //     //need to give them the validation power artficially
+    //     //or we can have one article each by user1 and user2, validate those by owner so that user1 and user2 get validation power
+    //     //use this validation 
+    //     //then each of owner, user1 and user2 upvote an article by user3(which can be validated by any of the three validators)
+    //     //when three upvotes reached on this article by user 3, all the validators of this article shold get the reward
         
-        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2, addr3, addr4} = await loadFixture(deployTokenFixture);
-        const user1 = { name: "tushadsar", email: "tsingdas@gmail.com", address: addr1.address };
-        await hardhatNewsForumContract.addNewUser(user1.name, user1.email, user1.address);
-    });
+    //     const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2, addr3, addr4} = await loadFixture(deployTokenFixture);
+    //     const user1 = { name: "tushadsar", email: "tsingdas@gmail.com", address: addr1.address };
+    //     await hardhatNewsForumContract.addNewUser(user1.name, user1.email, user1.address);
+    // });
 
     it("Should not validate an article if the user is not an Active Validator", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
@@ -268,15 +268,51 @@ describe("NewsForumContract", function () {
     });
 
     it("User should get canBeValidator powers when atleast 4 articles published by the user are validated", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
 
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const article = { title: "title", content: "content", author: addr1.address };
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        //const article1 = await hardhatNewsForumContract.getArticleById(numArticles);
+
+        //now validate the 4 articles by owner
+        //article at index=0 is dummy article
+        let user1 = await hardhatNewsForumContract.getUser(2);
+        expect(await user1.canBeValidator).to.equal(false);
+        
+        await hardhatNewsForumContract.connect(owner).validateArticle(1);
+        user1 = await hardhatNewsForumContract.getUser(2);
+        expect(await user1.canBeValidator).to.equal(false);
+        
+        await hardhatNewsForumContract.connect(owner).validateArticle(2);
+        user1 = await hardhatNewsForumContract.getUser(2);
+        expect(await user1.canBeValidator).to.equal(false);
+        
+        await hardhatNewsForumContract.connect(owner).validateArticle(3);
+        user1 = await hardhatNewsForumContract.getUser(2);
+        expect(await user1.canBeValidator).to.equal(false);
+        
+        await hardhatNewsForumContract.connect(owner).validateArticle(4);
+        user1 = await hardhatNewsForumContract.getUser(2);
+        expect(await user1.canBeValidator).to.equal(true);
     });
 
-    it("Should not allow the author of the article to validate the article", async function () {
+    it("Should not allow the author of the article to validate the article even if author is an active validator", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
 
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const article = { title: "title", content: "content", author: owner.address };
+        await hardhatNewsForumContract.connect(owner).addArticle(article.title, article.content);
+        const article1 = await hardhatNewsForumContract.getArticleById(numArticles);
+        // console.log(article1);
+        await expect(hardhatNewsForumContract.connect(owner).validateArticle(numArticles)).to.be.revertedWith("You cannot validate your own article");
     });
 
     it("Should shift the validation power when required and if possible", async function () {
-        
+
     });
     
 });

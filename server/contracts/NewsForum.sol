@@ -6,8 +6,8 @@ import "hardhat/console.sol";
 contract NewsForumContract {
     uint256 public constant VALIDATIONS_REQUIRED = 10;
     //uint256 public constant VALIDATION_REWARD = 10;
-    uint256 public constant NUMBER_OF_VALIDATORS = 3;
-    uint256 public totalRewardCount = 0;
+    uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
+    uint256 public totalRewardCount = 10;
     uint256 public maxNumberOfActiveValidators = 10;
     uint256 public constant upvotesCountForAwardToValidator = 3;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
@@ -32,7 +32,7 @@ contract NewsForumContract {
         _;
     }
     modifier OnlyValidator {
-        require(users[addressToUserId[msg.sender]].isValidator == true, "You must be a validator to perform the action");
+        require(users[addressToUserId[msg.sender]].isActiveValidator == true, "You must be a validator to perform the action");
         _;
     }
 
@@ -69,7 +69,7 @@ contract NewsForumContract {
         uint256 articlesValidatedSinceLastAppoint;
         uint256 rewardCount;
         uint256 articleValidatedCount;
-        bool isValidator;
+        bool isActiveValidator;
     }
 
     constructor() {
@@ -78,7 +78,7 @@ contract NewsForumContract {
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, false));
         //addign the owner as the first user which has validator rights
         addNewUser("Owner", "owner@gmail.com", msg.sender);
-        users[1].isValidator = true;
+        users[1].isActiveValidator = true;
         users[1].canBeValidator = true;
 
         articles.push(Article(0, "Invalid Article", "", address(0),
@@ -152,7 +152,7 @@ contract NewsForumContract {
         if(users[userId].rewardCount >= totalRewardCount/2){
             users[userId].canBeValidator = true;
             if(currentActiveValidators() < maxNumberOfActiveValidators){
-                users[userId].isValidator = true;
+                users[userId].isActiveValidator = true;
                 emit NewActiveValidatorAdded(authorAddress);
             }
             emit eligibleValidator(authorAddress);
@@ -270,13 +270,13 @@ contract NewsForumContract {
         //iterate over all the users
         for(uint i = 1; i < users.length; i++){
             address newUser = UserIdToaddress[i];
-            if(i != userIdOfCurrent && users[i].canBeValidator == true &&  users[i].isValidator == false){
+            if(i != userIdOfCurrent && users[i].canBeValidator == true &&  users[i].isActiveValidator == false){
                 //this is a potential new validator
-                users[i].isValidator = true;
+                users[i].isActiveValidator = true;
                 users[i].articlesValidatedSinceLastAppoint = 0;
 
                 //remove the current caller/user from validators list
-                users[addressToUserId[msg.sender]].isValidator = false;
+                users[addressToUserId[msg.sender]].isActiveValidator = false;
                 users[userIdOfCurrent].articlesValidatedSinceLastAppoint = 0;
                 
                 //emit an event to the logs of power transfer
@@ -303,7 +303,7 @@ contract NewsForumContract {
     function currentActiveValidators() private view returns (uint256){
         uint256 count = 0;
         for(uint i = 0; i < users.length; i++){
-            if(users[i].isValidator == true){
+            if(users[i].isActiveValidator == true){
                 count += 1;
             }
         }
@@ -332,7 +332,7 @@ contract NewsForumContract {
 
         //if the article is validated by more than half of the total validators then it can
         //be shown on the forum
-        if(articles[articleId].isValidated == false && articles[articleId].validators.length >= NUMBER_OF_VALIDATORS/2) {
+        if(articles[articleId].isValidated == false && articles[articleId].validators.length >= NUMBER_OF_ACTIVE_VALIDATORS/2) {
             articles[articleId].isValidated = true;
             emit ArticleValidated(articleId);
             //reward the validators who validated this article
