@@ -1,4 +1,4 @@
-require("@nomicfoundation/hardhat-toolbox");
+ require("@nomicfoundation/hardhat-toolbox");
 // require("dotenv").config();
 /** @type import('hardhat/config').HardhatUserConfig */
 // const GOERLI_URL = process.env.GOERLI_URL;
@@ -11,5 +11,14 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 module.exports = {
-  solidity: "0.8.9",
+  solidity: {
+    version: "0.8.17",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 100,
+      },
+    },
+  },
+
 };

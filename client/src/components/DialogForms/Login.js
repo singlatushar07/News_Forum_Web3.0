@@ -1,7 +1,7 @@
 import React,{ useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavigate } from "react-router-dom";
-export default function Login() {
+export default function Login({state}) {
     const nav = useNavigate();
     const handleSubmit = (e)=>{
         e.preventDefault()
@@ -9,21 +9,23 @@ export default function Login() {
     const [password,setPassword] = useState("");
     const [email,setEmail] = useState("");
     const LoginClicked = async ()=>{
-        const response = await fetch("http://localhost:5000/auth/user/login",
-        {
-          method:"POST",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email:email,
-            password:password
-          })
-        });
-        const data = await response.json();
-        console.log(data);
-        localStorage.setItem("email",email);
-       nav("/home")
+        try{
+            const {contract} = state;
+            console.log(contract);
+            const transaction2 = await contract.verifyUser(email,password);
+            // await transaction2.wait();
+            console.log(transaction2);
+            if(transaction2){
+                console.log("User logged in");
+                nav("/home")
+            }else{
+                alert("Wrong Credentials")
+            }
+            // console.log("2 done");
+        }catch(error){
+            console.log(error);
+        }
+    //    nav("/home")
       }
     return (
         <div className="text-center m-5-auto">

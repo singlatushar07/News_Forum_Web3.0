@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import { useEffect } from 'react';
-
+import {Link} from 'react-router-dom'
 const Forum = ({state}) => {
   const [Articles,setArticles] = useState([]);
   const {contract} = state;
@@ -29,13 +29,42 @@ const Forum = ({state}) => {
   const [title,setTitle] = useState("");
   const [content,setContent] = useState(""); 
   const addArticle = async ()=>{
-    const { contract } = state;
+    try{
+      const { contract } = state;
     console.log(title, content, contract);
 
     // const amount = { value: ethers.utils.parseEther("0.001") };
     const transaction = await contract.addArticle(title,content );
     await transaction.wait();
     console.log("Transaction is done");
+    const User_id = localStorage.getItem("User_id")
+    console.log(User_id);
+    // const a = JSON.parse({
+    //   title:title,
+    //   content:content,
+    //   authorId:User_id
+    // })
+    // console.log(a);
+    const response = await fetch("http://localhost:5000/article/addArticle",
+        {
+          method:"POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title:title,
+            content:content,
+            authorId:User_id
+          })
+        });
+        const data = await response.json();
+        // window.localStorage.setItem("data",JSON.stringify(data))
+        console.log(data);
+    }catch(error){
+      console.log(error);
+    }
+    
+
   }
   return (
     <>
@@ -55,11 +84,13 @@ const Forum = ({state}) => {
       <li className="nav-item">
         <a className="nav-link" href="#">{localStorage.getItem("email")}</a>
       </li>
-
+      <li className="nav-item">
+        <Link className = "nav-link" to="/update">Update User</Link>
+      </li>
     </ul>
-    <span className="navbar-text">
+    {/* <span className="navbar-text">
     {localStorage.getItem("address")}
-    </span>
+    </span> */}
   </div>
 </nav>
     <form action="" className='form-group' onSubmit={handleSubmit}>

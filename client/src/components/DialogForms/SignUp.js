@@ -5,45 +5,54 @@ export default function SignUp({state}) {
     const handleSubmit = (e)=>{
         e.preventDefault()
       }
-      const [address,setAddress] = useState("");
+      const [password,setPassword] = useState("");
       const [email,setEmail] = useState("");
       const [username,setUsername] = useState("");
+      const [address,setAddress] = useState("");
     //   const [confirm_password,setConfirmPassword] = useState("");
       const SignUpClicked = async ()=>{
-        // const response = await fetch("http://localhost:5000/auth/user/signup",
-        // {
-        //   method:"POST",
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   },
-        //   body: JSON.stringify({
-        //     username:username,
-        //     email:email ,
-        //     password:password,
-        //     confirm_password:confirm_password
-        //   })
-        // });
-        // const data = await response.json();
-        // // window.localStorage.setItem("data",JSON.stringify(data))
-        // console.log(data);
-        // // localStorage.setItem("data",JSON.stringify(user))
-        // localStorage.setItem("email",email)
-        // nav("/home")
-    const { contract } = state;
-    console.log(username, email, contract);
-    localStorage.setItem("username",username);
-    localStorage.setItem("email",email);
-    localStorage.setItem("address",address);
+        
+    // localStorage.setItem("email",email);
+    // localStorage.setItem("address",address);
     // const amount = { value: ethers.utils.parseEther("0.001") };
     try{
-        const transaction = await contract.addNewUser(username, email, address);
+        const { contract } = state;
+        console.log(contract);
+        const transaction = await contract.addNewUser(username, email,address, password);
         await transaction.wait();
+        console.log("1 done");
+        const transaction2 = await contract.verifyUser(email,password);
+        console.log("2 done");
+        // aait transaction2.wait();
+
         console.log("Transaction is done");
+        const response = await fetch("http://localhost:5000/auth/user/signup",
+        {
+          method:"POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username:username,
+            email:email ,
+            password:password,
+          })
+        });
+        const data = await response.json();
+        // window.localStorage.setItem("data",JSON.stringify(data))
+        console.log(data);
+
+        localStorage.setItem("username",username);
+        // localStorage.setItem("data",JSON.stringify(user))
+        localStorage.setItem("email",email)
+        console.log(data);
+        localStorage.setItem("User_id",data.new_user.id);
+    console.log(username, email, contract);
+    nav("/home")
 
     }catch(error){
         console.log(error);
     }
-    nav("/home")
       }
     return (
         <div className="text-center m-5-auto">
@@ -62,8 +71,14 @@ export default function SignUp({state}) {
                     }} />
                 </p>
                 <p>
-                    <label>Wallet Address</label><br/>
-                    <input type="Address" name="Address" required onChange={e=>{
+                    <label>Password</label><br/>
+                    <input type="Password" name="Password" required onChange={e=>{
+                        setPassword(e.target.value);
+                    }} />
+                </p>
+                <p>
+                    <label>Wallet</label><br/>
+                    <input type="address" name="address" required onChange={e=>{
                         setAddress(e.target.value);
                     }} />
                 </p>

@@ -13,21 +13,28 @@ datasource db {
 
 model user {
   id                      String                     @id @default(uuid())
-  username                String                     @unique
-  email                   String                     @unique
-  password                String
-  article_created         articles[]            
-  created_at              DateTime                   @default(now())               
-  updated_at              DateTime?                  
+  username                String
+  email                   String                     @unique              
+  password                String 
+  articles                article[]
 }
 
-model articles {
-  id                     String                     @id @default(uuid())
-  user_id                String                     
-  user                   user                       @relation(fields: [user_id], references: [id])
+model article{
+  id                     String                      @id @default(uuid())
   title                  String                      
-  article                String
-  created_at             DateTime                   @default(now())
+  content                String
+  authorId               String
+  author                 user                       @relation(fields: [authorId], references: [id])
 
-  @@index([user_id])                                        
+  @@index([authorId])
 }
+// model articles {
+//   id                     String                     @id @default(uuid())
+//   user_id                String                     
+//   user                   user                       @relation(fields: [user_id], references: [id])
+//   title                  String                      
+//   article                String
+//   created_at             DateTime                   @default(now())
+
+//   @@index([user_id])                                        
+// }

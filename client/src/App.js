@@ -10,8 +10,9 @@ import abi from "./contract/NewsForum.json";
 import { useState, useEffect } from "react";
 import  {ethers}  from "ethers";
 import { useNavigate } from "react-router-dom";
+import Update from './components/DialogForms/Update';
 function App() {
-  const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+  const contractAddress = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9';
   const [state,setState] = useState({
     provider:null,
     signer:null,
@@ -41,6 +42,7 @@ function App() {
         setAccount(account);
         setState({provider,signer,contract});
         console.log(state);
+        console.log(state);
       }
       connectWallet();
       }else{
@@ -60,9 +62,10 @@ function App() {
       {/* <NavBar profileStatus = "Anonymous"/> */}
       <Routes>
       <Route exact path = "/" element={<CredentialsPage/>}/>
-      <Route path = "/login" element={<Login/>}/>
+      <Route path = "/login" element={<Login state={state}/>}/>
         <Route path = "/register" element={<SignUp state={state}/>}/>
         <Route path="/home" element={<Forum state = {state}/>}/>
+        <Route path="/update" element = {<Update state = {state}/>}/>
       </Routes>
       </BrowserRouter>
 
