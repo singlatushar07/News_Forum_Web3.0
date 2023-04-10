@@ -5,6 +5,7 @@ import {Link} from 'react-router-dom'
 const Forum = ({state}) => {
   const [Articles,setArticles] = useState([]);
   const {contract} = state;
+  const [status,setStatus] = useState("");
   useEffect(() => {
     const ArticlesMessage = async () => {
         // const contract = {state};
@@ -14,6 +15,13 @@ const Forum = ({state}) => {
         setArticles(x);
         // console.log(Articles);
         console.log("x");
+        Articles.map((Article)=>{
+          if(Article.isValidated){
+            setStatus("Verified");
+          }else{
+            setStatus("Not Verified")
+          }
+        })
      
     };
     contract && ArticlesMessage();
@@ -66,6 +74,17 @@ const Forum = ({state}) => {
     
 
   }
+  const ValidateArticle = async (article_id)=>{
+    try{
+      const {contract} = state;
+    const transaction = await contract.validateArticle(article_id);
+    await transaction.wait();
+    }catch(error){
+      console.log(error);
+    }
+    
+
+  }
   return (
     <>
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -108,6 +127,11 @@ const Forum = ({state}) => {
     {/* <button onClick={ArticlesMessage}> Get </button> */}
     {
       Articles.map((Article)=>{
+          // if(Article.isValidated ){
+          //   setStatus("Verified");
+          // }else{
+          //   setStatus("Not Verified")
+          // }
         return (
           <>
           <div class="border">
@@ -116,13 +140,33 @@ const Forum = ({state}) => {
   <li class="list-inline-item ml-3">{new Date(Article.timestamp * 1000).toLocaleString()}</li>
   <li class="list-inline-item ml-3">{localStorage.getItem("username")}</li>
   <li class="list-inline-item ml-3">{localStorage.getItem("email")}</li>
+  {/* <li class="list-inline-item ml-3" >{status}</li> */}
+  <div>
+    {
+      !Article.isValidated && <li class="list-inline-item ml-3" style={{color:'red'}}>"Not Verified"</li>
+    }
+    {
+      Article.isValidated && <li class="list-inline-item ml-3" >"Verified"</li>
+    }
+  </div>
+  
 </ul>
 <blockquote class="blockquote">
   <p class="mb-0">{Article.content}</p>
   <footer class="blockquote-footer"> <cite title="Source Title">{Article.title}</cite></footer>
 </blockquote>
-<button type="button" class="btn btn-primary">Upvote</button>
-<button type="button" class="btn btn-primary ml-2">Downvote</button>
+<div>
+  {
+    !Article.isValidated && <button type="button" class="btn btn-primary ml-2" onClick={ValidateArticle(Article.id)} >Verify</button>
+  }
+  {
+    Article.isValidated && <button type="button" class="btn btn-primary ml-2">Upvote</button>
+  }
+  {
+    Article.isValidated && <button type="button" class="btn btn-primary ml-2">Downvote</button>
+  }
+</div>
+
           </div>
 
           </>

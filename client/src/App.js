@@ -12,7 +12,7 @@ import  {ethers}  from "ethers";
 import { useNavigate } from "react-router-dom";
 import Update from './components/DialogForms/Update';
 function App() {
-  const contractAddress = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9';
+  const contractAddress = '0xED8CAB8a931A4C0489ad3E3FB5BdEA84f74fD23E';
   const [state,setState] = useState({
     provider:null,
     signer:null,

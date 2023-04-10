@@ -81,7 +81,7 @@ contract NewsForumContract {
                                 false, false, 0, false));
     }
     
-    function addNewUser(string memory _name, string memory _email, address _wallet,string memory _password) public  {
+    function addNewUser(string memory _name, string memory _email, address _wallet,string memory _password) public   {
         users.push(User(_name, _email, true, block.timestamp, false, 0, 0, 0, false,_password));
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;

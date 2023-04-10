@@ -1,6 +1,15 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// user -- flow
+// user details , (email,password, private key) , 
+// flow -> user comes and gives credentials --> the front end fetches Private key of user 
+// from now on all transaction send will signed by the private key of the user logged in currently
+// when the user clicks on reg btn field (database)-> username , email, password, privatekey
+// (on chain) when the user clicks on reg btn field -> username, email, wallet 
+// using private key import imported from datbase and create a new wallet for current user using ether.js
+// this wallet is passed to all functions / components in react on click events
+
 generator client {
   provider = "prisma-client-js"
 }
