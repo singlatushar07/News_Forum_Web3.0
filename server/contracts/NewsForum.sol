@@ -4,11 +4,11 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 
 contract NewsForumContract {
-    uint256 public constant VALIDATIONS_REQUIRED = 10;
+    //uint256 public constant VALIDATIONS_REQUIRED = 10;
     //uint256 public constant VALIDATION_REWARD = 10;
-    uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
+    //uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
     uint256 public totalRewardCount = 10;
-    uint256 public maxNumberOfActiveValidators = 10;
+    uint256 public maxNumberOfActiveValidators = 3;
     uint256 public constant upvotesCountForAwardToValidator = 3;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
@@ -332,7 +332,7 @@ contract NewsForumContract {
 
         //if the article is validated by more than half of the total validators then it can
         //be shown on the forum
-        if(articles[articleId].isValidated == false && articles[articleId].validators.length >= NUMBER_OF_ACTIVE_VALIDATORS/2) {
+        if(articles[articleId].isValidated == false && articles[articleId].validators.length >= maxNumberOfActiveValidators/2) {
             articles[articleId].isValidated = true;
             emit ArticleValidated(articleId);
             //reward the validators who validated this article
@@ -348,12 +348,17 @@ contract NewsForumContract {
             if(users[editorId].canBeValidator == false && users[editorId].articleValidatedCount >= minArticleValidationsToGetValidatorPower){
                 //give the powers 
                 users[editorId].canBeValidator = true;
+                //check if you can make the user an active validator as well
+                if(currentActiveValidators() < maxNumberOfActiveValidators){
+                    users[editorId].isActiveValidator = true;
+                    emit NewActiveValidatorAdded(editorAddress);
+                }
                 emit eligibleValidator(UserIdToaddress[editorId]);
             }
         }
 
         //check if we need to transfer the valiation power to other eligible validators
-        if(maxNumberOfActiveValidators <= currentActiveValidators()){
+        if(currentActiveValidators() >= maxNumberOfActiveValidators){
             transferValidationPowerIfPossible();
         }
     }
