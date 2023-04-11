@@ -1,10 +1,26 @@
 import React from 'react'
 import { useState } from 'react';
 import { useEffect } from 'react';
-import {Link} from 'react-router-dom'
-const Forum = ({state}) => {
+import {Link} from 'react-router-dom';
+import { ethers } from 'ethers';
+import abi from "./contract/NewsForum.json"
+const connect = ()=>{
+  const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/");
+  console.log("provider");
+  console.log(provider);
+  const private_key = localStorage.getItem("privateKey");
+  const wallet = new ethers.Wallet(private_key, provider);
+  console.log(wallet);
+  console.log("wallet");
+  const contractAddress = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
+  const contract = new ethers.Contract(contractAddress,abi.abi,wallet);
+  return contract;
+}
+const contract = connect();
+const Forum = () => {
+  // const contract = connect();
   const [Articles,setArticles] = useState([]);
-  const {contract} = state;
+  // const {contract} = state;
   const [status,setStatus] = useState("");
   useEffect(() => {
     const ArticlesMessage = async () => {
@@ -38,12 +54,23 @@ const Forum = ({state}) => {
   const [content,setContent] = useState(""); 
   const addArticle = async ()=>{
     try{
-      const { contract } = state;
+      const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/");
+      // console.log(localStorage.getItem("privateKey"));
+      const private_key = localStorage.getItem("privateKey");
+      const wallet = new ethers.Wallet(private_key,provider);
+      const contractAddress = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
+      const contract = new  ethers.Contract(contractAddress,abi.abi,wallet);
+
+      //console.log(wallet.address, private_key);
+      console.log("wallet address while addding article- > ", wallet.address);
+      console.log("private key while adding article- > ",private_key);
+      // const { contract } = state;
     console.log(title, content, contract);
 
     // const amount = { value: ethers.utils.parseEther("0.001") };
-    const transaction = await contract.addArticle(title,content );
+    const transaction = await contract.connect(wallet).addArticle(title,content );
     await transaction.wait();
+    console.log(contract.wallet);
     console.log("Transaction is done");
     const User_id = localStorage.getItem("User_id")
     console.log(User_id);
@@ -76,8 +103,23 @@ const Forum = ({state}) => {
   }
   const ValidateArticle = async (article_id)=>{
     try{
-      const {contract} = state;
-    const transaction = await contract.validateArticle(article_id);
+      // const {contract} = state;
+      const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/");
+      // console.log(localStorage.getItem("privateKey"));
+      const private_key = localStorage.getItem("privateKey")
+      const wallet = new ethers.Wallet(private_key,provider);
+      const contractAddress = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
+      const contract = new  ethers.Contract(contractAddress,abi.abi,wallet);
+      console.log("wallet address while validation- > ", wallet.address);
+      console.log("private key while validation- > ",private_key);
+      // const contract = 
+      // const wallet = new ethers.Wallet('ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',provider);
+      // console.log(wallet);
+      // const contractAddress = '0xB581C9264f59BF0289fA76D61B2D0746dCE3C30D';
+      // const contracts = new ethers.Contract(contractAddress,abi.abi,wallet);
+      // console.log(article_id);
+    // const transaction = await contract.connect(wallet).validateArticle(article_id);
+    const transaction = await contract.connect(wallet).validateArticle(article_id);
     await transaction.wait();
     }catch(error){
       console.log(error);
@@ -122,6 +164,7 @@ const Forum = ({state}) => {
         setContent(e.target.value)
       }}></textarea>
       <button className=' btn btn-primary mt-3' onClick={addArticle}>Add</button>
+      <button className=' btn btn-primary mt-3 ml-4' onClick={addArticle}>Add Anoymously</button>
       </div>
     </form>
     {/* <button onClick={ArticlesMessage}> Get </button> */}
@@ -157,7 +200,7 @@ const Forum = ({state}) => {
 </blockquote>
 <div>
   {
-    !Article.isValidated && <button type="button" class="btn btn-primary ml-2" onClick={ValidateArticle(Article.id)} >Verify</button>
+    !Article.isValidated && <button type="button" class="btn btn-primary ml-2" onClick={()=>ValidateArticle(Article.id)} >Verify</button>
   }
   {
     Article.isValidated && <button type="button" class="btn btn-primary ml-2">Upvote</button>

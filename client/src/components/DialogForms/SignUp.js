@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link ,useNavigate} from 'react-router-dom'
-export default function SignUp({state}) {
+import { ethers } from 'ethers';
+import abi from "../contract/NewsForum.json"
+export default function SignUp() {
     const nav = useNavigate();
     const handleSubmit = (e)=>{
         e.preventDefault()
@@ -9,6 +11,7 @@ export default function SignUp({state}) {
       const [email,setEmail] = useState("");
       const [username,setUsername] = useState("");
       const [address,setAddress] = useState("");
+      const [private_key,setPrivateKey] = useState("");
     //   const [confirm_password,setConfirmPassword] = useState("");
       const SignUpClicked = async ()=>{
         
@@ -16,16 +19,6 @@ export default function SignUp({state}) {
     // localStorage.setItem("address",address);
     // const amount = { value: ethers.utils.parseEther("0.001") };
     try{
-        const { contract } = state;
-        console.log(contract);
-        const transaction = await contract.addNewUser(username, email,address, password);
-        await transaction.wait();
-        console.log("1 done");
-        const transaction2 = await contract.verifyUser(email,password);
-        console.log("2 done");
-        // aait transaction2.wait();
-
-        console.log("Transaction is done");
         const response = await fetch("http://localhost:5000/auth/user/signup",
         {
           method:"POST",
@@ -36,6 +29,7 @@ export default function SignUp({state}) {
             username:username,
             email:email ,
             password:password,
+            private_key:private_key
           })
         });
         const data = await response.json();
@@ -44,10 +38,35 @@ export default function SignUp({state}) {
 
         localStorage.setItem("username",username);
         // localStorage.setItem("data",JSON.stringify(user))
-        localStorage.setItem("email",email)
+        localStorage.setItem("email",email);
+        localStorage.setItem("privateKey",private_key);
         console.log(data);
         localStorage.setItem("User_id",data.new_user.id);
-    console.log(username, email, contract);
+        // console.log(contract);
+        const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/");
+        console.log("provider");
+        console.log(provider);
+        const wallet = new ethers.Wallet(private_key, provider);
+        console.log(wallet);
+        console.log("wallet");
+        const contractAddress = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
+        const contract = new ethers.Contract(contractAddress,abi.abi,wallet);
+        console.log("contract");
+        console.log(contract);
+        // const NewsForum = await ethers.getContractFactory('NewsForumContract');
+        // const newsForum = await NewsForum.attach(owner_address);
+        // const contractWithSigner = await newsForum.connect(walletOwner)
+
+        const transaction = await contract.addNewUser(username, email,address, password);
+        await transaction.wait();
+        console.log("1 done");
+        const transaction2 = await contract.verifyUser(email,password);
+        console.log("2 done");
+        // aait transaction2.wait();
+
+        console.log("Transaction is done");
+        
+    // console.log(username, email, contract);
     nav("/home")
 
     }catch(error){
@@ -80,6 +99,12 @@ export default function SignUp({state}) {
                     <label>Wallet</label><br/>
                     <input type="address" name="address" required onChange={e=>{
                         setAddress(e.target.value);
+                    }} />
+                </p>
+                <p>
+                    <label>PRIVATE KEY</label><br/>
+                    <input type="key" name="key" required onChange={e=>{
+                        setPrivateKey(e.target.value);
                     }} />
                 </p>
                 {/* <p>

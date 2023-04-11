@@ -20,12 +20,13 @@ export const getUserCredentials = async (req, res) => {
   };
 export const registerUser = async (req,res)=> {
     try {
-        const {username,email,password} = req.body;
+        const {username,email,password,private_key} = req.body;
         const new_user = await prisma.user.create({
             data: {    
                 username,
                 email,
                 password,
+                private_key
             },
         })
         return res.status(200).json({
