@@ -10,10 +10,22 @@ import { PrismaClient } from "@prisma/client";
 export const prisma = new PrismaClient();
 dotenv.config();
 
-export const getUserCredentials = async (req, res) => {
+export const userLogin = async (req, res) => {
   try {
-    
-
+    const {email,password} = req.body;
+    const existing_user = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (!existing_user)
+      return res.status(404).json({ message: "User doesn't exist" });
+      if(!(existing_user.password === password)){
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+      res.status(200).json({
+        result: existing_user,
+        token,
+      });
+      
 } catch (error) {
     console.error(error)
 }

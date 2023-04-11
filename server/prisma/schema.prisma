@@ -25,7 +25,6 @@ model user {
   username                String
   email                   String                     @unique              
   password                String 
-  private_key             String
   articles                article[]
 }
 
