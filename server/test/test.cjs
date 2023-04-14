@@ -44,9 +44,9 @@ describe("NewsForumContract", function () {
             const signer = await ethers.getSigner(i);
             const user = { name: "validator" + i, email: "tsi" + i + "@gmail.com", signer: signer, id: i + 1 };
             validators.push(user);
-            if (i !== 0) {
-                await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
-            }
+            // if (i !== 0) {
+            await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
+            // }
         }
 
         //use of a fixture
@@ -64,12 +64,6 @@ describe("NewsForumContract", function () {
         expect(user.email).to.equal(user2.email);
         expect(user.userAddress).to.equal(user2.address);
     });
-
-    // it("Unauthorized user should not be able to add a user", async function () {
-    //     const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
-    //     const user2 = { name: "tushar", email: "tsi@gmail.com", address: addr2.address };
-    //     await expect(hardhatNewsForumContract.connect(addr2).addNewUser(user2.name, user2.email, user2.address)).to.be.revertedWith("Only owner can call this function");
-    // });
 
     it("Should update a user", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1 } = await loadFixture(deployTokenFixture);
@@ -99,6 +93,24 @@ describe("NewsForumContract", function () {
         expect(newArticle.content).to.equal(article.content);
         expect(newArticle.author).to.equal(article.author);
 
+    });
+
+    it("Should follow word limit for articles and title", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        let content = "";
+        for (let i = 0; i < 250; i++) {
+            content += "content ";
+        }
+        const article = { title: "title", content: content, author: addr1.address };
+        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content + " " + article.content)).to.be.revertedWith("Article must have less than 200 words");
+        let title = "";
+        for (let i = 0; i < 50; i++) {
+            title += "title ";
+        }
+        article.title = title;
+        article.content = "content";
+        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content + " " + article.content)).to.be.revertedWith("Title must have less than 30 words");
     });
 
     it("Unauthorized user should not be able to add an article", async function () {

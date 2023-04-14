@@ -8,16 +8,18 @@ contract NewsForumContract {
     //uint256 public constant VALIDATION_REWARD = 10;
     //uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
     uint256 public totalRewardCount = 10;
-    uint256 public maxNumberOfActiveValidators = 5;
+    uint256 public maxNumberOfActiveValidators = 10;
     uint256 public constant upvotesCountForAwardToValidator = 5;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
     uint256 public constant minArticleValidationsToGetValidatorPower = 4;
     uint256 public constant maxUnvalidatedArticles = minArticleValidationsToGetValidatorPower;
+    uint256 public constant maxNumberOfWordsInArticle = 200;
+    uint256 public constant maxNumberOfWordsInTitle = 30;
 
     uint256 public currentNumberOfValidators = 0;
     
-    address owner;
+    // address owner;
 
     User[] public users;
     mapping(address => uint256) addressToUserId;
@@ -26,10 +28,10 @@ contract NewsForumContract {
     Article[] public articles;
     mapping(uint256 => address) articleToOwner;
 
-    modifier OnlyOwner {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
-    }
+    // modifier OnlyOwner {
+    //     require(msg.sender == owner, "Only owner can call this function");
+    //     _;
+    // }
     modifier OnlyRegistered {
         require(users[addressToUserId[msg.sender]].valid == true, "You must be registered to perform the action");
         _;
@@ -86,13 +88,13 @@ contract NewsForumContract {
     }
 
     constructor() {
-        owner = msg.sender;
+        // owner = msg.sender;
         //pushing an invalid user to do some specific tests on the contract
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, 0, false));
-        //addign the owner as the first user which has validator rights
-        addNewUser("Owner", "owner@gmail.com", msg.sender);
-        users[1].isActiveValidator = true;
-        users[1].canBeValidator = true;
+        // //addign the owner as the first user which has validator rights
+        // addNewUser("Owner", "owner@gmail.com", msg.sender);
+        // users[1].isActiveValidator = true;
+        // users[1].canBeValidator = true;
 
         articles.push(Article(0, "Invalid Article", "", address(0),
                                 new address[](0), new address[](0), new address[](0),
@@ -127,8 +129,28 @@ contract NewsForumContract {
         return users[userId];
     }
 
+    function verifyLength(string memory str, uint256 maxLength) internal pure returns (bool) {
+        bytes memory bytesStr = bytes(str);
+        uint wordCount = 0;
+        bool lastCharWasSpace = true;
+
+        for (uint i = 0; i < bytesStr.length; i++) {
+            if (bytesStr[i] == ' ') {
+                lastCharWasSpace = true;
+            } else if (lastCharWasSpace) {
+                wordCount++;
+                lastCharWasSpace = false;
+            }
+        }
+
+        return wordCount <= maxLength;
+    }
+
+
     function addArticle(string memory _title, string memory _content) external OnlyRegistered {
         require(users[addressToUserId[msg.sender]].unvalidatedArticlesCount < maxUnvalidatedArticles, "You have reached the maximum number of unvalidated articles");
+        require(verifyLength(_title, maxNumberOfWordsInTitle), "Title must have less than 30 words");
+        require(verifyLength(_content, maxNumberOfWordsInArticle), "Article must have less than 200 words");
         uint id = articles.length;
         articles.push(Article(id, _title, _content, msg.sender,
                                 new address[](0), new address[](0), new address[](0),
@@ -141,6 +163,8 @@ contract NewsForumContract {
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
         require(articleToOwner[articleId] == msg.sender, "You must be the author of the article to update it");
         require(articles[articleId].valid == true, "Article does not exist");
+        require(verifyLength(_title, maxNumberOfWordsInTitle), "Title must have less than 30 words");
+        require(verifyLength(_content, maxNumberOfWordsInArticle), "Article must have less than 200 words");
 
         articles[articleId].title = _title;
         articles[articleId].content = _content;
@@ -321,7 +345,8 @@ contract NewsForumContract {
         //otherwise the validation power remains with the current user/caller
 
         uint userId = addressToUserId[msg.sender];
-        if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange && msg.sender != owner){
+        // if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange && msg.sender != owner){
+        if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange){
             //the user has already valiated atleast validationsForChange articles
             //we can give the validation power to someone else if availabe
             findNewValidator();
