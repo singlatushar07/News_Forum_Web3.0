@@ -19,7 +19,7 @@ contract NewsForumContract {
 
     uint256 public currentNumberOfValidators = 0;
     
-    // address owner;
+   // address owner;
 
     User[] public users;
     mapping(address => uint256) addressToUserId;
@@ -88,10 +88,10 @@ contract NewsForumContract {
     }
 
     constructor() {
-        // owner = msg.sender;
+        //owner = msg.sender;
         //pushing an invalid user to do some specific tests on the contract
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, 0, false));
-        // //addign the owner as the first user which has validator rights
+        //addign the owner as the first user which has validator rights
         // addNewUser("Owner", "owner@gmail.com", msg.sender);
         // users[1].isActiveValidator = true;
         // users[1].canBeValidator = true;
