@@ -124,7 +124,7 @@ contract NewsForumContract {
         articles[articleId].timestamp = block.timestamp;
     }
 
-    function giveAwardToValidators(uint articleId) public {
+    function giveAwardToValidators(uint articleId) internal {
         for (uint i = 0; i < articles[articleId].validators.length; i++) {
             address valiAd = articles[articleId].validators[i];
             uint256 userId = addressToUserId[valiAd];
@@ -140,7 +140,7 @@ contract NewsForumContract {
         }
     }
 
-    function rewardArticleEditor(uint articleId) public {
+    function rewardArticleEditor(uint articleId) internal {
         //when half of the current active validators validate an article, then the editor gets some reward
 
         address authorAddress = articles[articleId].author;
