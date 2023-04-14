@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { Link ,useNavigate} from 'react-router-dom'
 export default function SignUp({state}) {
@@ -18,11 +19,11 @@ export default function SignUp({state}) {
     try{
         const { contract } = state;
         console.log(contract);
-        const transaction = await contract.addNewUser(username, email,address, password);
+        const transaction = await contract.addNewUser(username, email,address);
         await transaction.wait();
         console.log("1 done");
-        const transaction2 = await contract.verifyUser(email,password);
-        console.log("2 done");
+        // const transaction2 = await contract.verifyUser(email,password);
+        // console.log("2 done");
         // aait transaction2.wait();
 
         console.log("Transaction is done");
@@ -41,7 +42,6 @@ export default function SignUp({state}) {
         const data = await response.json();
         // window.localStorage.setItem("data",JSON.stringify(data))
         console.log(data);
-
         localStorage.setItem("username",username);
         // localStorage.setItem("data",JSON.stringify(user))
         localStorage.setItem("email",email)

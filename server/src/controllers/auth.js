@@ -10,12 +10,23 @@ import { PrismaClient } from "@prisma/client";
 export const prisma = new PrismaClient();
 dotenv.config();
 
-export const getUserCredentials = async (req, res) => {
+export const userLogin = async (req, res) => {
   try {
-    
+    const {email,password} = req.body;
+    const existing_user = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (!existing_user)
+      return res.status(404).json({ message: "User doesn't exist" });
+      if(!(existing_user.password === password)){
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+      res.status(200).json({
+        result: existing_user,
+      });
 
 } catch (error) {
-    console.error(error)
+    console.error(error);
 }
   };
 export const registerUser = async (req,res)=> {
@@ -36,3 +47,38 @@ export const registerUser = async (req,res)=> {
         console.error(error)
     }
 }
+export const ProfileChange = async  (req,res)=>{
+    try{
+    const username = req.body.name;
+    const email = req.body.email;
+    const id = req.body.id;
+    const response = await prisma.user.findUnique({
+      where:{
+        id
+      }
+    })
+    if(response){
+      const update = await prisma.user.update({
+        where:{
+          id
+        },
+        data:{
+          username:username,
+        //   age:age,
+          email:email,
+        }
+      })
+      res.status(200).send({
+        success:true,
+        update
+      })
+    }else{
+      res.status(200).json({
+        success:false,
+        msg:"user not found"
+      })
+    }
+  }catch(err){
+    console.log(err);
+  }
+  }

@@ -6,6 +6,9 @@ const Forum = ({state}) => {
   const [Articles,setArticles] = useState([]);
   const {contract} = state;
   const [status,setStatus] = useState("");
+  const [upvotes,setUpvotes] = useState(new Map());
+  const [downvotes,setDownvotes] = useState(new Map());
+
   useEffect(() => {
     const ArticlesMessage = async () => {
         // const contract = {state};
@@ -15,17 +18,54 @@ const Forum = ({state}) => {
         setArticles(x);
         // console.log(Articles);
         console.log("x");
-        Articles.map((Article)=>{
+        Articles.map(async (Article)=>{
           if(Article.isValidated){
             setStatus("Verified");
           }else{
             setStatus("Not Verified")
           }
+          // const transaction = await contract.getNumberOfUpvotes(Article.id);
+          // const x = parseInt(transaction._hex,16);
+          // upvotes.set(Article.id,x);
+          // console.log(upvotes);
+          // const transaction2 = await contract.getNumberOfDownvotes(Article.id);
+          // const y = parseInt(transaction2._hex,16);
+          // downvotes.set(Article.id,y);
+          // console.log(downvotes);
         })
      
-    };
+        
+      };
+    //   const getUpvotes = async ()=>{
+    //     const result = await contract.getNumberOfUpvotes(article_id);
+    // // setUpvotes(result);
+    // const x = parseInt(result._hex,16);
+    // setUpvotes(x);
+    //   }
+    //   const getDownvotes = async ()=>{
+    //     const result = await contract.getNumberOfDownvotes(article_id);
+    // // setUpvotes(result);
+    // const x = parseInt(result._hex,16);
+    // setDownvotes(x);
+    //   }
     contract && ArticlesMessage();
+    // getUpvotes();
+    // getDownvotes();
   }, [contract]);
+  useEffect(() => {
+    const fetchVotes = async () => {
+      for (const article of Articles) {
+        const upvoteResult = await contract.getNumberOfUpvotes(article.id);
+        const upvoteCount = parseInt(upvoteResult._hex, 16);
+        setUpvotes((prevUpvotes) => new Map(prevUpvotes.set(article.id, upvoteCount)));
+
+        const downvoteResult = await contract.getNumberOfDownvotes(article.id);
+        const downvoteCount = parseInt(downvoteResult._hex, 16);
+        setDownvotes((prevDownvotes) => new Map(prevDownvotes.set(article.id, downvoteCount)));
+      }
+    };
+    contract && Articles.length && fetchVotes();
+  }, [contract, Articles]);
   // const ArticlesMessage = async (event) => {
   //      event.preventDefault();
   //       const x = await contract.getAllArticles();
@@ -40,9 +80,9 @@ const Forum = ({state}) => {
     try{
       const { contract } = state;
     console.log(title, content, contract);
-
+    const username = localStorage.getItem("username");
     // const amount = { value: ethers.utils.parseEther("0.001") };
-    const transaction = await contract.addArticle(title,content );
+    const transaction = await contract.addArticle(title,content,username );
     await transaction.wait();
     console.log("Transaction is done");
     const User_id = localStorage.getItem("User_id")
@@ -74,16 +114,78 @@ const Forum = ({state}) => {
     
 
   }
+  const addAnonymously = async ()=>{
+    try{
+      const { contract } = state;
+    console.log(title, content, contract);
+    // const amount = { value: ethers.utils.parseEther("0.001") };
+    const transaction = await contract.addArticleAnonymous(title,content);
+    await transaction.wait();
+    console.log("Transaction is done");
+    const User_id = localStorage.getItem("User_id")
+    console.log(User_id);
+    // const a = JSON.parse({
+    //   title:title,
+    //   content:content,
+    //   authorId:User_id
+    // })
+    // console.log(a);
+    const response = await fetch("http://localhost:5000/article/addArticle",
+        {
+          method:"POST",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title:title,
+            content:content,
+            authorId:User_id
+          })
+        });
+        const data = await response.json();
+        // window.localStorage.setItem("data",JSON.stringify(data))
+        console.log(data);
+    }catch(error){
+      console.log(error);
+    }
+    
+  }
   const ValidateArticle = async (article_id)=>{
     try{
-      const {contract} = state;
+    const {contract} = state;
     const transaction = await contract.validateArticle(article_id);
     await transaction.wait();
     }catch(error){
       console.log(error);
     }
     
-
+  }
+  const UpvoteArticle = async (article_id)=>{
+    try{
+      const {contract} = state;
+      const transaction = await contract.upvoteArticle(article_id);
+      await transaction.wait();
+      console.log("upvote transaction done");
+      // const result = await contract.getNumberOfUpvotes(article_id);
+      // // setUpvotes(result);
+      // const x = parseInt(result._hex,16);
+      // upvotes.set(article_id,x);
+      // console.log();
+    }catch(error){
+      console.log(error);
+    }
+  }
+  const DownvoteArticle = async (article_id)=>{
+    try{
+      const {contract} = state;
+      const transaction = await contract.downvoteArticle(article_id);
+      await transaction.wait();
+      // const result = await contract.getNumberOfDownvotes(article_id);
+      // const x = parseInt(result._hex,16);
+      // downvotes.set(article_id,x);
+    }catch(error){
+      console.log(error);
+    }
   }
   return (
     <>
@@ -122,6 +224,7 @@ const Forum = ({state}) => {
         setContent(e.target.value)
       }}></textarea>
       <button className=' btn btn-primary mt-3' onClick={addArticle}>Add</button>
+      <button className=' btn btn-primary ml-2 mt-3' onClick={addAnonymously}>Add Anonymously</button>
       </div>
     </form>
     {/* <button onClick={ArticlesMessage}> Get </button> */}
@@ -136,10 +239,14 @@ const Forum = ({state}) => {
           <>
           <div class="border">
           <ul class="list-inline ">
-  <li class="list-inline-item ">{Article.author}</li>
+            {
+  Article.authorName=="" && <li class="list-inline-item "></li>
+            }
+            {
+  !Article.authorName=="" && <li class="list-inline-item">{Article.author}</li>
+            }
   <li class="list-inline-item ml-3">{new Date(Article.timestamp * 1000).toLocaleString()}</li>
-  <li class="list-inline-item ml-3">{localStorage.getItem("username")}</li>
-  <li class="list-inline-item ml-3">{localStorage.getItem("email")}</li>
+  <li class="list-inline-item ml-3">{Article.authorName}</li>
   {/* <li class="list-inline-item ml-3" >{status}</li> */}
   <div>
     {
@@ -157,14 +264,19 @@ const Forum = ({state}) => {
 </blockquote>
 <div>
   {
-    !Article.isValidated && <button type="button" class="btn btn-primary ml-2" onClick={ValidateArticle(Article.id)} >Verify</button>
+    !Article.isValidated && <button type="button" class="btn btn-primary ml-2" onClick={()=>ValidateArticle(Article.id)} >Verify</button>
   }
   {
-    Article.isValidated && <button type="button" class="btn btn-primary ml-2">Upvote</button>
+    Article.isValidated && <p><button type="button" class="btn btn-primary mt-2" onSubmit={handleSubmit} onClick={()=>UpvoteArticle(Article.id)}>Upvote</button> {upvotes.get(Article.id)}</p>  
+    
   }
   {
-    Article.isValidated && <button type="button" class="btn btn-primary ml-2">Downvote</button>
+    Article.isValidated && <p><button type="button" class="btn btn-primary mt-2" onSubmit={handleSubmit} onClick={()=>DownvoteArticle(Article.id)}>Downvote</button> {downvotes.get(Article.id)}</p>
+                                                   
   }
+   <Link className = "nav-link" to="/update/article" onClick={()=>{
+    localStorage.setItem("article_id",Article.id);
+   }}>Update Article</Link>
 </div>
 
           </div>

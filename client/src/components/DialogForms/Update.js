@@ -8,6 +8,8 @@ const Update = ({state}) => {
         const transaction = await contract.updateUser(username,email);
         await transaction.wait();
         console.log("transaction is done");
+        localStorage.setItem("username",username);
+        localStorage.setItem("email",email);
     }
     const handleChange=(e)=>{
         e.preventDefault();
@@ -15,12 +17,12 @@ const Update = ({state}) => {
   return (
     <div>
       <form action="" method="post" onSubmit = {handleChange}>
-        <input type="username" required onChange={e=>{
+        <input type="username" placeholder="username" required onChange={e=>{
             setUsername(e.target.value);
         }}/>
-        <input type="email" required onChange={
+        <input type="email" placeholder="email"required onChange={
             e=>{
-                setEmail(e.target.value)
+                setEmail(e.target.value);
             }
         } />
         <button onClick = {UpdateUser}>Update</button>

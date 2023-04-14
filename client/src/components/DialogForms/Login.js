@@ -10,18 +10,31 @@ export default function Login({state}) {
     const [email,setEmail] = useState("");
     const LoginClicked = async ()=>{
         try{
-            const {contract} = state;
-            console.log(contract);
-            const transaction2 = await contract.verifyUser(email,password);
-            // await transaction2.wait();
-            console.log(transaction2);
-            if(transaction2){
-                console.log("User logged in");
-                nav("/home")
-            }else{
-                alert("Wrong Credentials")
-            }
+
             // console.log("2 done");
+            const response = await fetch("http://localhost:5000/auth/user/login",
+    {
+      method:"POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email:email,
+        password:password
+      })
+    });
+    const data = await response.json();
+    if(data){
+        console.log(data);
+        // localStorage.setItem("name",name)
+        localStorage.setItem("email",email)
+        // dispatch({type:"USER",payload:true})
+        localStorage.setItem("username",data.result.username);
+        nav("/home")
+    }else{
+        alert("You have entered wrong credentials")
+    }
+    
         }catch(error){
             console.log(error);
         }

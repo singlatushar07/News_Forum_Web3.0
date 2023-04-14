@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "user" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
@@ -10,10 +10,10 @@ CREATE TABLE "user" (
 
 -- CreateTable
 CREATE TABLE "article" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "authorId" TEXT NOT NULL,
+    "authorId" INTEGER NOT NULL,
 
     CONSTRAINT "article_pkey" PRIMARY KEY ("id")
 );
