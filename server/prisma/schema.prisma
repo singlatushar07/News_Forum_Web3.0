@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// user -- flow
+// user details , (email,password, private key) , 
+// flow -> user comes and gives credentials --> the front end fetches Private key of user 
+// from now on all transaction send will signed by the private key of the user logged in currently
+// when the user clicks on reg btn field (database)-> username , email, password, privatekey
+// (on chain) when the user clicks on reg btn field -> username, email, wallet 
+// using private key import imported from datbase and create a new wallet for current user using ether.js
+// this wallet is passed to all functions / components in react on click events
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model user {
+  id                      Int                     @id @default(autoincrement())
+  username                String
+  email                   String                     @unique              
+  password                String 
+  articles                article[]
+}
+
+model article{
+  id                     Int                      @id @default(autoincrement())
+  title                  String                      
+  content                String
+  authorId               Int
+  author                 user                       @relation(fields: [authorId], references: [id])
+
+  @@index([authorId])
+}
+// model articles {
+//   id                     String                     @id @default(uuid())
+//   user_id                String                     
+//   user                   user                       @relation(fields: [user_id], references: [id])
+//   title                  String                      
+//   article                String
+//   created_at             DateTime                   @default(now())
+
+//   @@index([user_id])                                        
+// }

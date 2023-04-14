@@ -1,0 +1,11 @@
+#metamask hi use krna hai
+# use database for login not the verify user function.
+# article database integration (article id will be fetched from blockchain; then fetch article content from database)
+# user profile page add in react
+# (update profile) button on user profile page
+# update article button beside the article on main page
+
+
+
+#anonymous 
+#front end 

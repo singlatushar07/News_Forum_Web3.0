@@ -13,17 +13,16 @@ async function main() {
 
   // const lockedAmount = hre.ethers.utils.parseEther("1");
 
-  // const Lock = await hre.ethers.getContractFactory("Lock");
-  // const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  // const Lock = await hre.ethers.getContractFactory("NewsForumContract");
+  // const lock = await Lock.deploy();
 
   // await lock.deployed();
 
   // console.log(
   //   `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
   // );
-
   const provider = new ethers.providers.JsonRpcProvider();
-  const privateKey = '0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e';
+  const privateKey = 'df57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e';
   const wallet = new ethers.Wallet(privateKey, provider);
 
   const contractFactory = await hre.ethers.getContractFactory("NewsForumContract");
