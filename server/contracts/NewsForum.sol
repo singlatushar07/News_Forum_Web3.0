@@ -44,11 +44,16 @@ contract NewsForumContract {
     }
 
     event ValidationPowerTransferred(address fromUser, address toUser);
+    event UserAdded(uint256 userId);
+    event UserUpdated(uint256 userId);
+    event ArticleAdded(uint256 articleId);
+    event ArticleUpdated(uint256 articleId);
     event ArticleValidated(uint256 articleId);
     event eligibleValidator(address User);
     event ArticleValidatedByUser(uint256 articleId, address validator);
     event TryGivingPower(uint256 articleId, address author);
     event ArticleUpvoted(uint256 articleId, address upvoter);
+    event ArticleDownvoted(uint256 articleId, address upvoter);
     event RewardSummary(address receiver, uint256 receiverRewards, uint256 totalReward);
     event NewActiveValidatorAdded(address validator);
 
@@ -102,12 +107,14 @@ contract NewsForumContract {
         users.push(User(_name, _email, _wallet, true, block.timestamp, canBeValidator, 0, 0, 0, canBeValidator));
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
+        emit UserAdded(users.length - 1);
     }
 
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {
         users[addressToUserId[msg.sender]].name = _name;
         users[addressToUserId[msg.sender]].email = _email;
         users[addressToUserId[msg.sender]].timestamp = block.timestamp;
+        emit UserUpdated(addressToUserId[msg.sender]);
     }
 
     function getUserCount() external view returns (uint) {
@@ -125,6 +132,7 @@ contract NewsForumContract {
                                 new address[](0), new address[](0), new address[](0),
                                 false, true, block.timestamp, false));
         articleToOwner[id] = msg.sender;      
+        emit ArticleAdded(id);
     }
 
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
@@ -134,6 +142,7 @@ contract NewsForumContract {
         articles[articleId].title = _title;
         articles[articleId].content = _content;
         articles[articleId].timestamp = block.timestamp;
+        emit ArticleUpdated(articleId);
     }
 
     function giveAwardToValidators(uint articleId) internal {
@@ -217,6 +226,7 @@ contract NewsForumContract {
         }
 
         articles[articleId].downvotes.push(msg.sender);
+        emit ArticleDownvoted(articleId, msg.sender);
     }
 
     function getArticleById (uint articleId) external view returns (Article memory) {

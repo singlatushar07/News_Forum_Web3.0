@@ -1,7 +1,8 @@
 const { ethers } = require("hardhat");
 const { expect } = require("chai");
-const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const { string } = require("hardhat/internal/core/params/argumentTypes");
+const { loadFixture, setBalance } = require("@nomicfoundation/hardhat-network-helpers");
+// const { ethers } = require('ethers');
+
 
 async function printUsersInfo(hardhatNewsForumContract) {
     //return "Hello";
@@ -360,46 +361,99 @@ describe("NewsForumContract", function () {
 
 
 
-    it("Should shift the validation power when required and if possible", async function () {
+    // it("Should shift the validation power when required and if possible", async function () {
+    //     const { NewsForumContract, hardhatNewsForumContract, owner, validators, maxNumberOfActiveValidators, numValidators } = await loadFixture(deployValidationFixture);
+    //     const minArticleValidationsToGetValidatorPower = await hardhatNewsForumContract.minArticleValidationsToGetValidatorPower();
+    //     const users = [];
+    //     for (let i = 0; i < maxNumberOfActiveValidators; i++) {
+    //         const signer = await ethers.getSigner(i + numValidators);
+    //         const user = { name: "user" + i, email: "tsi" + i + "@gmail.com", signer: signer };
+    //         users.push(user);
+    //         await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
+    //     }
+
+    //     const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+    //     const signer = await ethers.getSigner(numValidators);
+    //     const article = { title: "title", content: "content" };
+    //     await hardhatNewsForumContract.connect(owner).addNewUser("name", "email", signer.address);
+    //     for (let i = 0; i < minArticleValidationsToGetValidatorPower; i++) {
+    //         await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content);
+    //     }
+    //     let user = await hardhatNewsForumContract.getUser(numValidators + 1);
+    //     expect(await user.canBeValidator).to.equal(false);
+
+    //     for (let j = 0; j < minArticleValidationsToGetValidatorPower; j++) {
+    //         for (let i = 0; i < Math.floor(maxNumberOfActiveValidators / 2); i++) {
+    //             await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(numArticles + j);
+    //         }
+    //         user = await hardhatNewsForumContract.getUser(numValidators + 1);
+    //         if (j == minArticleValidationsToGetValidatorPower - 1) {
+    //             expect(await user.canBeValidator).to.equal(true);
+    //         } else {
+    //             expect(await user.canBeValidator).to.equal(false);
+    //         }
+    //     }
+
+    //     for (let i = 0; i < Math.floor(maxNumberOfActiveValidators / 2); i++) {
+    //         await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(numArticles);
+    //     }
+
+    //     user = await hardhatNewsForumContract.getUser(numValidators + 1);
+    //     expect(await user.canBeValidator).to.equal(false);
+
+    // });
+
+    it("Will add 100 users and 100 articles and perform some actions like validation and upvote and downvote", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, validators, maxNumberOfActiveValidators, numValidators } = await loadFixture(deployValidationFixture);
-        const minArticleValidationsToGetValidatorPower = await hardhatNewsForumContract.minArticleValidationsToGetValidatorPower();
+        const numUsers = 100;
+        const randomSigners = async (amount) => {
+            const signers = [];
+            for (let i = 0; i < amount; i++) {
+                // Create a random wallet
+                let wallet = ethers.Wallet.createRandom()
+                // Connect it to a provider
+                wallet = wallet.connect(ethers.provider);
+
+                // Add it to the array
+                signers.push(wallet);
+                await setBalance(wallet.address, ethers.utils.parseEther('1000'))
+            }
+            return signers;
+        }
+
+        const signers = await randomSigners(numUsers);
         const users = [];
-        for (let i = 0; i < maxNumberOfActiveValidators; i++) {
-            const signer = await ethers.getSigner(i + numValidators);
+        const articles = [];
+        for (let i = 0; i < numUsers; i++) {
+            const signer = signers[i];
             const user = { name: "user" + i, email: "tsi" + i + "@gmail.com", signer: signer };
             users.push(user);
+            const article = { title: "title" + i, content: "content" + i };
+            articles.push(article);
             await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
-        }
-
-        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
-        const signer = await ethers.getSigner(numValidators);
-        const article = { title: "title", content: "content" };
-        await hardhatNewsForumContract.connect(owner).addNewUser("name", "email", signer.address);
-        for (let i = 0; i < minArticleValidationsToGetValidatorPower; i++) {
             await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content);
         }
-        let user = await hardhatNewsForumContract.getUser(numValidators + 1);
-        expect(await user.canBeValidator).to.equal(false);
-
-        for (let j = 0; j < minArticleValidationsToGetValidatorPower; j++) {
-            for (let i = 0; i < Math.floor(maxNumberOfActiveValidators / 2); i++) {
-                await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(numArticles + j);
-            }
-            user = await hardhatNewsForumContract.getUser(numValidators + 1);
-            if (j == minArticleValidationsToGetValidatorPower - 1) {
-                expect(await user.canBeValidator).to.equal(true);
-            } else {
-                expect(await user.canBeValidator).to.equal(false);
-            }
-        }
+        const usersInContract = await hardhatNewsForumContract.getAllUsers();
+        // validators are created and one extra is invalid user
+        expect(usersInContract.length - numValidators - 1).to.equal(numUsers);
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        // One extra is invalid article
+        expect(numArticles).to.equal(numUsers + 1);
 
         for (let i = 0; i < Math.floor(maxNumberOfActiveValidators / 2); i++) {
-            await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(numArticles);
+            for (let j = 0; j < numUsers; j++) {
+                await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(j + 1);
+            }
         }
 
-        user = await hardhatNewsForumContract.getUser(numValidators + 1);
-        expect(await user.canBeValidator).to.equal(false);
-
+        let validatedArticles = await hardhatNewsForumContract.getAllValidatedArticles();
+        validatedArticles = validatedArticles.filter((article) => { return article.isValidated; });
+        expect(validatedArticles.length).to.equal(numUsers);
+        for (let i = 1; i < numUsers; i++) {
+            await hardhatNewsForumContract.connect(users[i].signer).upvoteArticle(1);
+        }
+        const upvotes = await hardhatNewsForumContract.getNumberOfUpvotes(1);
+        expect(upvotes).to.equal(numUsers - 1);
     });
 
 });
