@@ -30,6 +30,7 @@ export default function Login({state}) {
         localStorage.setItem("email",email)
         // dispatch({type:"USER",payload:true})
         localStorage.setItem("username",data.result.username);
+        localStorage.setItem("user_id",data.result.id);
         nav("/home")
     }else{
         alert("You have entered wrong credentials")

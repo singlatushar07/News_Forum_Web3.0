@@ -49,7 +49,7 @@ export const registerUser = async (req,res)=> {
 }
 export const ProfileChange = async  (req,res)=>{
     try{
-    const username = req.body.name;
+    const username = req.body.usernname;
     const email = req.body.email;
     const id = req.body.id;
     const response = await prisma.user.findUnique({

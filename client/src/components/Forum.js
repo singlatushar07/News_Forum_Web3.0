@@ -85,7 +85,8 @@ const Forum = ({state}) => {
     const transaction = await contract.addArticle(title,content,username );
     await transaction.wait();
     console.log("Transaction is done");
-    const User_id = localStorage.getItem("User_id")
+    const User_id = localStorage.getItem("user_id")
+    const userId = parseInt(User_id,10);
     console.log(User_id);
     // const a = JSON.parse({
     //   title:title,
@@ -102,12 +103,13 @@ const Forum = ({state}) => {
           body: JSON.stringify({
             title:title,
             content:content,
-            authorId:User_id
+            authorId:userId
           })
         });
         const data = await response.json();
         // window.localStorage.setItem("data",JSON.stringify(data))
         console.log(data);
+        // window.reload();
     }catch(error){
       console.log(error);
     }
@@ -123,7 +125,8 @@ const Forum = ({state}) => {
     await transaction.wait();
     console.log("Transaction is done");
     const User_id = localStorage.getItem("User_id")
-    console.log(User_id);
+    const userId = parseInt(User_id,10);
+    console.log(userId);
     // const a = JSON.parse({
     //   title:title,
     //   content:content,
@@ -139,12 +142,13 @@ const Forum = ({state}) => {
           body: JSON.stringify({
             title:title,
             content:content,
-            authorId:User_id
+            authorId:userId
           })
         });
         const data = await response.json();
         // window.localStorage.setItem("data",JSON.stringify(data))
         console.log(data);
+        // window.reload();
     }catch(error){
       console.log(error);
     }
@@ -187,6 +191,7 @@ const Forum = ({state}) => {
       console.log(error);
     }
   }
+
   return (
     <>
     <nav className="navbar navbar-expand-lg navbar-light bg-light">

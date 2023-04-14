@@ -2,14 +2,40 @@ import React from 'react'
 import {useState} from 'react'
 const Update = ({state}) => {
     const [username,setUsername] = useState("");
-    const [email,setEmail] = useState("")
+    const [email,setEmail] = useState("");
+
     const UpdateUser = async ()=>{
-        const {contract} = state;
-        const transaction = await contract.updateUser(username,email);
-        await transaction.wait();
-        console.log("transaction is done");
-        localStorage.setItem("username",username);
-        localStorage.setItem("email",email);
+      try{
+        const user_id = localStorage.getItem("user_id");
+        const id = parseInt(user_id,10);
+        // console.log("2 done");
+        const response = await fetch("http://localhost:5000/auth/user/update",
+{
+  method:"POST",
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    id:id,
+    username:username,
+    email:email
+  })
+});
+const data = await response.json();
+if(data){
+    console.log(data);
+    // localStorage.setItem("name",name)
+    localStorage.setItem("email",email)
+    // dispatch({type:"USER",payload:true})
+    localStorage.setItem("username",username);
+    alert("Profile Changed")
+}else{
+    alert("user doesnt exist")
+}
+
+    }catch(error){
+        console.log(error);
+    }
     }
     const handleChange=(e)=>{
         e.preventDefault();

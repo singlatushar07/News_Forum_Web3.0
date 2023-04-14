@@ -46,7 +46,7 @@ export default function SignUp({state}) {
         // localStorage.setItem("data",JSON.stringify(user))
         localStorage.setItem("email",email)
         console.log(data);
-        localStorage.setItem("User_id",data.new_user.id);
+        localStorage.setItem("user_id",data.new_user.id);
     console.log(username, email, contract);
     nav("/home")
 

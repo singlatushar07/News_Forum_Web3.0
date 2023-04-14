@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import Update from './components/DialogForms/Update';
 import UpdateArticle from './components/UpdateArticle';
 function App() {
-  const contractAddress = '0xC2469d565A2DC77f4a496Ff5e3B25ED69Ea8AB6b';
+  const contractAddress = '0x87E3D01B36b07794AB2c2B72C6FD958Fc98cCab3';
   const [state,setState] = useState({
     provider:null,
     signer:null,
