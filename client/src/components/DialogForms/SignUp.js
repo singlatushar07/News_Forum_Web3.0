@@ -27,7 +27,7 @@ export default function SignUp({state}) {
         // aait transaction2.wait();
 
         console.log("Transaction is done");
-        const response = await fetch("http://localhost:5000/auth/user/signup",
+        const response = await fetch("http://localhost:5002/auth/user/signup",
         {
           method:"POST",
           headers: {

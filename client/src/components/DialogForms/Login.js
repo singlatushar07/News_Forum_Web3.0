@@ -12,7 +12,7 @@ export default function Login({state}) {
         try{
 
             // console.log("2 done");
-            const response = await fetch("http://localhost:5000/auth/user/login",
+            const response = await fetch("http://localhost:5002/auth/user/login",
     {
       method:"POST",
       headers: {

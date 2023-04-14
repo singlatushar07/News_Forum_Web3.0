@@ -94,7 +94,7 @@ const Forum = ({state}) => {
     //   authorId:User_id
     // })
     // console.log(a);
-    const response = await fetch("http://localhost:5000/article/addArticle",
+    const response = await fetch("http://localhost:5002/article/addArticle",
         {
           method:"POST",
           headers: {
@@ -133,7 +133,7 @@ const Forum = ({state}) => {
     //   authorId:User_id
     // })
     // console.log(a);
-    const response = await fetch("http://localhost:5000/article/addArticle",
+    const response = await fetch("http://localhost:5002/article/addArticle",
         {
           method:"POST",
           headers: {

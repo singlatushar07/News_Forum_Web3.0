@@ -15,7 +15,7 @@ app.use(
       credentials: true,
     })
   );
-const port = process.env.port || 5000;
+const port = process.env.port || 5002;
 
 app.use("/auth",authRoutes);
 app.use("/article",articleRoutes);

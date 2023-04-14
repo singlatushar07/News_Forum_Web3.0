@@ -9,7 +9,7 @@ const Update = ({state}) => {
         const user_id = localStorage.getItem("user_id");
         const id = parseInt(user_id,10);
         // console.log("2 done");
-        const response = await fetch("http://localhost:5000/auth/user/update",
+        const response = await fetch("http://localhost:5002/auth/user/update",
 {
   method:"POST",
   headers: {
