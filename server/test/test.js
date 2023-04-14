@@ -212,6 +212,17 @@ describe("NewsForumContract", function () {
         }
     });
 
+    it("Only maxUnvalidatedArticles number of unvalidated articles can be added by a user", async function () {
+        const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
+        const maxUnvalidatedArticles = await hardhatNewsForumContract.maxUnvalidatedArticles();
+        const article = { title: "title", content: "content", author: addr1.address };
+        for (let i = 0; i < maxUnvalidatedArticles; i++) {
+            await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        }
+        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content)).be.revertedWith("You have reached the maximum number of unvalidated articles");
+    });
+
     it("Should validate an article by Active Validators", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, validators, maxNumberOfActiveValidators, numValidators } = await loadFixture(deployValidationFixture);
 
@@ -303,7 +314,7 @@ describe("NewsForumContract", function () {
         await expect(hardhatNewsForumContract.connect(signer2).validateArticle(numArticles)).to.be.revertedWith("You must be a validator to perform the action");
     });
 
-    it("User should get canBeValidator powers when atleast 4 articles published by the user are validated", async function () {
+    it("User should get canBeValidator powers when atleast minArticleValidationsToGetValidatorPower articles published by the user are validated", async function () {
 
         const { NewsForumContract, hardhatNewsForumContract, owner, validators, maxNumberOfActiveValidators, numValidators } = await loadFixture(deployValidationFixture);
         const minArticleValidationsToGetValidatorPower = await hardhatNewsForumContract.minArticleValidationsToGetValidatorPower();

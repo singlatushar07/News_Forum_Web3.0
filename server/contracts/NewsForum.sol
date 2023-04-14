@@ -13,7 +13,7 @@ contract NewsForumContract {
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
     uint256 public constant minArticleValidationsToGetValidatorPower = 4;
-    // uint256 public constant maxUnvalidatedArticles = 4;
+    uint256 public constant maxUnvalidatedArticles = minArticleValidationsToGetValidatorPower;
 
     uint256 public currentNumberOfValidators = 0;
     
@@ -81,13 +81,14 @@ contract NewsForumContract {
         uint256 articlesValidatedSinceLastAppoint;
         uint256 rewardCount;
         uint256 articleValidatedCount;
+        uint256 unvalidatedArticlesCount;
         bool isActiveValidator;
     }
 
     constructor() {
         owner = msg.sender;
         //pushing an invalid user to do some specific tests on the contract
-        users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, false));
+        users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, 0, false));
         //addign the owner as the first user which has validator rights
         addNewUser("Owner", "owner@gmail.com", msg.sender);
         users[1].isActiveValidator = true;
@@ -104,7 +105,7 @@ contract NewsForumContract {
             canBeValidator = true;
             currentNumberOfValidators += 1;
         }
-        users.push(User(_name, _email, _wallet, true, block.timestamp, canBeValidator, 0, 0, 0, canBeValidator));
+        users.push(User(_name, _email, _wallet, true, block.timestamp, canBeValidator, 0, 0, 0, 0, canBeValidator));
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
         emit UserAdded(users.length - 1);
@@ -127,11 +128,13 @@ contract NewsForumContract {
     }
 
     function addArticle(string memory _title, string memory _content) external OnlyRegistered {
+        require(users[addressToUserId[msg.sender]].unvalidatedArticlesCount < maxUnvalidatedArticles, "You have reached the maximum number of unvalidated articles");
         uint id = articles.length;
         articles.push(Article(id, _title, _content, msg.sender,
                                 new address[](0), new address[](0), new address[](0),
                                 false, true, block.timestamp, false));
-        articleToOwner[id] = msg.sender;      
+        articleToOwner[id] = msg.sender;
+        users[addressToUserId[msg.sender]].unvalidatedArticlesCount += 1;
         emit ArticleAdded(id);
     }
 
@@ -359,6 +362,7 @@ contract NewsForumContract {
         //be shown on the forum
         if(articles[articleId].isValidated == false && articles[articleId].validators.length >= maxNumberOfActiveValidators/2) {
             articles[articleId].isValidated = true;
+            users[addressToUserId[articles[articleId].author]].unvalidatedArticlesCount -= 1;
             emit ArticleValidated(articleId);
             //reward the validators who validated this article
             rewardArticleEditor(articleId);
