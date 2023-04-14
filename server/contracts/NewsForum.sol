@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract NewsForumContract {
-    //uint256 public constant VALIDATIONS_REQUIRED = 10;
+    uint256 public constant validationsForChange = 10;
     //uint256 public constant VALIDATION_REWARD = 10;
     //uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
     uint256 public totalRewardCount = 10;
-    uint256 public maxNumberOfActiveValidators = 3;
-    uint256 public constant upvotesCountForAwardToValidator = 3;
+    uint256 public maxNumberOfActiveValidators = 5;
+    uint256 public constant upvotesCountForAwardToValidator = 5;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
     uint256 public constant minArticleValidationsToGetValidatorPower = 4;
+    // uint256 public constant maxUnvalidatedArticles = 4;
+
+    uint256 public currentNumberOfValidators = 0;
     
     address owner;
 
@@ -33,6 +36,10 @@ contract NewsForumContract {
     }
     modifier OnlyValidator {
         require(users[addressToUserId[msg.sender]].isActiveValidator == true, "You must be a validator to perform the action");
+        _;
+    }
+    modifier OnlyValidated(uint articleId){
+        require(articles[articleId].isValidated == true, "Action allowed only for validated articles");
         _;
     }
 
@@ -87,7 +94,12 @@ contract NewsForumContract {
     }
     
     function addNewUser(string memory _name, string memory _email, address _wallet) public {
-        users.push(User(_name, _email, _wallet, true, block.timestamp, false, 0, 0, 0, false));
+        bool canBeValidator = false;
+        if(currentNumberOfValidators < maxNumberOfActiveValidators/2){
+            canBeValidator = true;
+            currentNumberOfValidators += 1;
+        }
+        users.push(User(_name, _email, _wallet, true, block.timestamp, canBeValidator, 0, 0, 0, canBeValidator));
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
     }
@@ -150,16 +162,19 @@ contract NewsForumContract {
         emit RewardSummary(authorAddress, users[userId].rewardCount, totalRewardCount);
 
         if(users[userId].rewardCount >= totalRewardCount/2){
-            users[userId].canBeValidator = true;
-            if(currentActiveValidators() < maxNumberOfActiveValidators){
+            if(!users[userId].canBeValidator){
+                users[userId].canBeValidator = true;
+            }
+            if(!users[userId].isActiveValidator && currentActiveValidators() < maxNumberOfActiveValidators){
                 users[userId].isActiveValidator = true;
+                currentNumberOfValidators += 1;
                 emit NewActiveValidatorAdded(authorAddress);
             }
             emit eligibleValidator(authorAddress);
         }
     }
 
-    function upvoteArticle(uint articleId) external OnlyRegistered {
+    function upvoteArticle(uint articleId) external OnlyRegistered OnlyValidated(articleId){
         require(articles[articleId].valid == true, "Article does not exist");
 
         for (uint i = 0; i < articles[articleId].upvotes.length; i++) {
@@ -185,7 +200,7 @@ contract NewsForumContract {
         }
     }
 
-    function downvoteArticle(uint articleId) external OnlyRegistered {
+    function downvoteArticle(uint articleId) external OnlyRegistered OnlyValidated(articleId){
         require(articles[articleId].valid == true, "Article does not exist");
 
         for (uint i = 0; i < articles[articleId].downvotes.length; i++) {
@@ -265,7 +280,7 @@ contract NewsForumContract {
         return allArticles;
     }
 
-    function findNewValidator() private{
+    function findNewValidator() private {
         uint userIdOfCurrent = addressToUserId[msg.sender];
         //iterate over all the users
         for(uint i = 1; i < users.length; i++){
@@ -288,13 +303,13 @@ contract NewsForumContract {
         }
     }
 
-    function transferValidationPowerIfPossible() private{
-        //will transfer power only if new valiator is available and 10 articles validated
+    function transferValidationPowerIfPossible() private {
+        //will transfer power only if new valiator is available and validationsForChange articles validated
         //otherwise the validation power remains with the current user/caller
 
         uint userId = addressToUserId[msg.sender];
-        if(users[userId].articlesValidatedSinceLastAppoint >= 10 && msg.sender != owner){
-            //the user has already valiated atleast 10 articles
+        if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange && msg.sender != owner){
+            //the user has already valiated atleast validationsForChange articles
             //we can give the validation power to someone else if availabe
             findNewValidator();
         }
@@ -351,6 +366,7 @@ contract NewsForumContract {
                 //check if you can make the user an active validator as well
                 if(currentActiveValidators() < maxNumberOfActiveValidators){
                     users[editorId].isActiveValidator = true;
+                    currentNumberOfValidators += 1;
                     emit NewActiveValidatorAdded(editorAddress);
                 }
                 emit eligibleValidator(UserIdToaddress[editorId]);
