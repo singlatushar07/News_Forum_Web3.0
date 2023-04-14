@@ -44,9 +44,9 @@ describe("NewsForumContract", function () {
             const signer = await ethers.getSigner(i);
             const user = { name: "validator" + i, email: "tsi" + i + "@gmail.com", signer: signer, id: i + 1 };
             validators.push(user);
-            if (i !== 0) {
+            //if (i !== 0) {
                 await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
-            }
+            //}
         }
 
         //use of a fixture

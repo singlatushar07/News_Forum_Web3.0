@@ -17,7 +17,7 @@ contract NewsForumContract {
 
     uint256 public currentNumberOfValidators = 0;
     
-    address owner;
+   // address owner;
 
     User[] public users;
     mapping(address => uint256) addressToUserId;
@@ -26,10 +26,10 @@ contract NewsForumContract {
     Article[] public articles;
     mapping(uint256 => address) articleToOwner;
 
-    modifier OnlyOwner {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
-    }
+    // modifier OnlyOwner {
+    //     require(msg.sender == owner, "Only owner can call this function");
+    //     _;
+    // }
     modifier OnlyRegistered {
         require(users[addressToUserId[msg.sender]].valid == true, "You must be registered to perform the action");
         _;
@@ -86,13 +86,13 @@ contract NewsForumContract {
     }
 
     constructor() {
-        owner = msg.sender;
+        //owner = msg.sender;
         //pushing an invalid user to do some specific tests on the contract
         users.push(User("Invalid User", "", address(0), false, 0, false, 0, 0, 0, 0, false));
         //addign the owner as the first user which has validator rights
-        addNewUser("Owner", "owner@gmail.com", msg.sender);
-        users[1].isActiveValidator = true;
-        users[1].canBeValidator = true;
+        // addNewUser("Owner", "owner@gmail.com", msg.sender);
+        // users[1].isActiveValidator = true;
+        // users[1].canBeValidator = true;
 
         articles.push(Article(0, "Invalid Article", "", address(0),
                                 new address[](0), new address[](0), new address[](0),
@@ -321,7 +321,8 @@ contract NewsForumContract {
         //otherwise the validation power remains with the current user/caller
 
         uint userId = addressToUserId[msg.sender];
-        if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange && msg.sender != owner){
+        // if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange && msg.sender != owner){
+        if(users[userId].articlesValidatedSinceLastAppoint >= validationsForChange){
             //the user has already valiated atleast validationsForChange articles
             //we can give the validation power to someone else if availabe
             findNewValidator();
