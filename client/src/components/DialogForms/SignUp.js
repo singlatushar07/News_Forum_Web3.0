@@ -1,6 +1,9 @@
 
 import React, { useState } from 'react'
 import { Link ,useNavigate} from 'react-router-dom'
+import { ethers } from 'ethers';
+
+
 export default function SignUp({state}) {
     const nav = useNavigate();
     const handleSubmit = (e)=>{
@@ -20,11 +23,16 @@ export default function SignUp({state}) {
         const { contract } = state;
         console.log(contract);
         const transaction = await contract.addNewUser(username, email,address);
-        await transaction.wait();
-        console.log("1 done");
+        const receipt = await transaction.wait();
+        const returnValue = receipt.logs[0].data;
+        // await transaction.wait();
+        const returnValueNumber = ethers.BigNumber.from(returnValue).toNumber();
+        console.log("User created with userId -->", returnValueNumber);
         // const transaction2 = await contract.verifyUser(email,password);
         // console.log("2 done");
         // aait transaction2.wait();
+        console.log("address of the user is --> ", address)
+        const addr  = address;
 
         console.log("Transaction is done");
         const response = await fetch("http://localhost:5002/auth/user/signup",
@@ -37,6 +45,8 @@ export default function SignUp({state}) {
             username:username,
             email:email ,
             password:password,
+            userId:returnValueNumber,
+            address:addr
           })
         });
         const data = await response.json();
@@ -46,7 +56,7 @@ export default function SignUp({state}) {
         // localStorage.setItem("data",JSON.stringify(user))
         localStorage.setItem("email",email)
         console.log(data);
-        localStorage.setItem("user_id",data.new_user.id);
+        localStorage.setItem("user_id",returnValueNumber);
     console.log(username, email, contract);
     nav("/home")
 

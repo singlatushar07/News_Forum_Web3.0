@@ -99,7 +99,7 @@ contract NewsForumContract {
                                 false, false, 0, false));
     }
     
-    function addNewUser(string memory _name, string memory _email, address _wallet) public {
+    function addNewUser(string memory _name, string memory _email, address _wallet) public returns (uint256) {
         bool canBeValidator = false;
         if(currentNumberOfValidators < maxNumberOfActiveValidators/2){
             canBeValidator = true;
@@ -109,6 +109,7 @@ contract NewsForumContract {
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
         emit UserAdded(users.length - 1);
+        return users.length - 1;
     }
 
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {

@@ -25,25 +25,13 @@ model user {
   username                String
   email                   String                     @unique              
   password                String 
-  articles                article[]
+  userId                  Int                        @unique
+  address                 String                     @unique
 }
 
 model article{
   id                     Int                      @id @default(autoincrement())
   title                  String                      
   content                String
-  authorId               Int
-  author                 user                       @relation(fields: [authorId], references: [id])
-
-  @@index([authorId])
 }
-// model articles {
-//   id                     String                     @id @default(uuid())
-//   user_id                String                     
-//   user                   user                       @relation(fields: [user_id], references: [id])
-//   title                  String                      
-//   article                String
-//   created_at             DateTime                   @default(now())
 
-//   @@index([user_id])                                        
-// }

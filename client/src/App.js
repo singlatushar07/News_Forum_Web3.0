@@ -12,8 +12,9 @@ import  {ethers}  from "ethers";
 import { useNavigate } from "react-router-dom";
 import Update from './components/DialogForms/Update';
 import UpdateArticle from './components/UpdateArticle';
+import UserDetails from './components/UserDetails';
 function App() {
-  const contractAddress = '0x87E3D01B36b07794AB2c2B72C6FD958Fc98cCab3';
+  const contractAddress = '0x73511669fd4dE447feD18BB79bAFeAC93aB7F31f';
   const [state,setState] = useState({
     provider:null,
     signer:null,
@@ -42,6 +43,8 @@ function App() {
         });
         setAccount(account);
         setState({provider,signer,contract});
+        console.log("The state in app.js is -> ", state);
+        localStorage.setItem("state", JSON.stringify(state));
         console.log(state);
         console.log(state);
       }
@@ -68,6 +71,8 @@ function App() {
         <Route path="/home" element={<Forum state = {state}/>}/>
         <Route exact path="/update" element = {<Update state = {state}/>}/>
         <Route exact path="/update/article" element = {<UpdateArticle state = {state}/>}/>
+        <Route exact path="/user_details" element = {<UserDetails state = {state}/>}/>
+
       </Routes>
       </BrowserRouter>
 
