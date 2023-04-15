@@ -1,8 +1,20 @@
 # Instructions to run the platform
+#### **Important Info**: The stable features are in 'main' branch while the experimental features are in 'experimental' branch. I would request you to first run and test the 'main' branch, and when everythign is found working then test the features in 'experimental'
+##### Features in main branch
+- Adding user. Updating user. First two users will be activeValidators by default.
+- Login and Register user using Postgres database.
+- Adding article. Upating article. Upvote. Downvote
+- Article is validated when atleast half the active validators validate it.
+- Validation power given to new user when conditions met.
+##### Features in experimental branch
+- Add an article anonymoously.
+- User profile page.
+- Details of the author when displaying an article.
 
-Instructions for setting up and running the News Forum Web3.0 application are as follows: 
+### Instructions for setting up and running the News Forum Web3.0 application are as follows: 
 
 - Have Metamask extension installed in your browser. Preferably Chrome. Also add localhost:8545 to the list in Metamask. Create any three new user accounts in Metamask for testing the app. To create new user accounts in Metamask, use 3 of the 20 private keys that are displayed when you ran ‘npx hardhat node’. This is necessary to ensure that you have enough balance in your Meta mask wallet to be able to do the transactions. This process has to be repeated each time you run ‘npx hardhat node’. 
+- Delete the folder /server/prisma/migrations each time you want to run an instance of the program. If not done, then one might encounter errors in 
 - Firstly, download the repository from Github using the link provided: 
 https://github.com/singlatushar07/News_Forum_Web3.0/ 
 - Navigate to the /server and /client folders in the downloaded repository and run the "npm i" command in each folder to install the required dependencies. 
