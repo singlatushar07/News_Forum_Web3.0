@@ -58,7 +58,6 @@ const Forum = ({state}) => {
         const upvoteResult = await contract.getNumberOfUpvotes(article.id);
         const upvoteCount = parseInt(upvoteResult._hex, 16);
         setUpvotes((prevUpvotes) => new Map(prevUpvotes.set(article.id, upvoteCount)));
-
         const downvoteResult = await contract.getNumberOfDownvotes(article.id);
         const downvoteCount = parseInt(downvoteResult._hex, 16);
         setDownvotes((prevDownvotes) => new Map(prevDownvotes.set(article.id, downvoteCount)));
@@ -85,7 +84,7 @@ const Forum = ({state}) => {
     const transaction = await contract.addArticle(title,content,username );
     await transaction.wait();
     console.log("Transaction is done");
-    const User_id = localStorage.getItem("user_id")
+    const User_id = localStorage.getItem("user_id");
     const userId = parseInt(User_id,10);
     console.log(User_id);
     // const a = JSON.parse({
@@ -211,7 +210,10 @@ const Forum = ({state}) => {
         <a className="nav-link" href="#">{localStorage.getItem("email")}</a>
       </li>
       <li className="nav-item">
-        <Link className = "nav-link" to="/update">Update User</Link>
+      <Link className = "nav-link" to="/update">Update Profile</Link>
+      </li>
+      <li className="nav-item">
+        <Link className = "nav-link" to="/user/profile">User Profile</Link>
       </li>
     </ul>
     {/* <span className="navbar-text">

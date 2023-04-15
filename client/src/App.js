@@ -12,8 +12,9 @@ import  {ethers}  from "ethers";
 import { useNavigate } from "react-router-dom";
 import Update from './components/DialogForms/Update';
 import UpdateArticle from './components/UpdateArticle';
+import Profile from './components/DialogForms/Profile';
 function App() {
-  const contractAddress = '0x87E3D01B36b07794AB2c2B72C6FD958Fc98cCab3';
+  const contractAddress = '0x5095d3313C76E8d29163e40a0223A5816a8037D8';
   const [state,setState] = useState({
     provider:null,
     signer:null,
@@ -68,6 +69,7 @@ function App() {
         <Route path="/home" element={<Forum state = {state}/>}/>
         <Route exact path="/update" element = {<Update state = {state}/>}/>
         <Route exact path="/update/article" element = {<UpdateArticle state = {state}/>}/>
+        <Route exact path="/user/profile" element = {<Profile state = {state}/>}/>
       </Routes>
       </BrowserRouter>
 
