@@ -71,6 +71,7 @@ contract NewsForumContract {
         bool valid;
         uint timestamp;
         bool validatorsRewardedUponUpvotes;
+        string authorName;
     }
 
     struct User {
@@ -98,7 +99,7 @@ contract NewsForumContract {
 
         articles.push(Article(0, "Invalid Article", "", address(0),
                                 new address[](0), new address[](0), new address[](0),
-                                false, false, 0, false));
+                                false, false, 0, false,""));
     }
     
     function addNewUser(string memory _name, string memory _email, address _wallet) public {
@@ -111,6 +112,7 @@ contract NewsForumContract {
         addressToUserId[_wallet] = users.length - 1;
         UserIdToaddress[users.length - 1] = _wallet;
         emit UserAdded(users.length - 1);
+
     }
 
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {
@@ -147,14 +149,14 @@ contract NewsForumContract {
     }
 
 
-    function addArticle(string memory _title, string memory _content) external OnlyRegistered {
+    function addArticle(string memory _title, string memory _content, string memory _username) external OnlyRegistered {
         require(users[addressToUserId[msg.sender]].unvalidatedArticlesCount < maxUnvalidatedArticles, "You have reached the maximum number of unvalidated articles");
         require(verifyLength(_title, maxNumberOfWordsInTitle), "Title must have less than 30 words");
         require(verifyLength(_content, maxNumberOfWordsInArticle), "Article must have less than 200 words");
         uint id = articles.length;
         articles.push(Article(id, _title, _content, msg.sender,
                                 new address[](0), new address[](0), new address[](0),
-                                false, true, block.timestamp, false));
+                                false, true, block.timestamp, false,_username));
         articleToOwner[id] = msg.sender;
         users[addressToUserId[msg.sender]].unvalidatedArticlesCount += 1;
         emit ArticleAdded(id);
