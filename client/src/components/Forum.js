@@ -82,7 +82,7 @@ const Forum = ({state}) => {
     console.log(title, content, contract);
     const username = localStorage.getItem("username");
     // const amount = { value: ethers.utils.parseEther("0.001") };
-    const transaction = await contract.addArticle(title,content,username );
+    const transaction = await contract.addArticle(title,content);
     await transaction.wait();
     console.log("Transaction is done");
     const User_id = localStorage.getItem("user_id")
