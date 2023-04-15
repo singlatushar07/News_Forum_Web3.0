@@ -8,7 +8,7 @@ contract NewsForumContract {
     //uint256 public constant VALIDATION_REWARD = 10;
     //uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
     uint256 public totalRewardCount = 10;
-    uint256 public maxNumberOfActiveValidators = 10;
+    uint256 public maxNumberOfActiveValidators = 5;
     uint256 public constant upvotesCountForAwardToValidator = 5;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;
@@ -114,6 +114,7 @@ contract NewsForumContract {
         emit UserAdded(users.length - 1);
 
     }
+    
 
     function updateUser(string memory _name, string memory _email) external OnlyRegistered {
         users[addressToUserId[msg.sender]].name = _name;
@@ -149,7 +150,7 @@ contract NewsForumContract {
     }
 
 
-    function addArticle(string memory _title, string memory _content, string memory _username) external OnlyRegistered {
+    function addArticle(string memory _title, string memory _content,string memory _username) external OnlyRegistered {
         require(users[addressToUserId[msg.sender]].unvalidatedArticlesCount < maxUnvalidatedArticles, "You have reached the maximum number of unvalidated articles");
         require(verifyLength(_title, maxNumberOfWordsInTitle), "Title must have less than 30 words");
         require(verifyLength(_content, maxNumberOfWordsInArticle), "Article must have less than 200 words");
@@ -161,7 +162,18 @@ contract NewsForumContract {
         users[addressToUserId[msg.sender]].unvalidatedArticlesCount += 1;
         emit ArticleAdded(id);
     }
-
+    function addAnonymously(string memory _title, string memory _content) external OnlyRegistered {
+        require(users[addressToUserId[msg.sender]].unvalidatedArticlesCount < maxUnvalidatedArticles, "You have reached the maximum number of unvalidated articles");
+        require(verifyLength(_title, maxNumberOfWordsInTitle), "Title must have less than 30 words");
+        require(verifyLength(_content, maxNumberOfWordsInArticle), "Article must have less than 200 words");
+        uint id = articles.length;
+        articles.push(Article(id, _title, _content, msg.sender,
+                                new address[](0), new address[](0), new address[](0),
+                                false, true, block.timestamp, false,""));
+        articleToOwner[id] = msg.sender;
+        users[addressToUserId[msg.sender]].unvalidatedArticlesCount += 1;
+        emit ArticleAdded(id);
+    }
     function updateArticle(uint articleId, string memory _title, string memory _content) external OnlyRegistered {
         require(articleToOwner[articleId] == msg.sender, "You must be the author of the article to update it");
         require(articles[articleId].valid == true, "Article does not exist");

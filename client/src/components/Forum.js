@@ -82,7 +82,7 @@ const Forum = ({state}) => {
     console.log(title, content, contract);
     const username = localStorage.getItem("username");
     // const amount = { value: ethers.utils.parseEther("0.001") };
-    const transaction = await contract.addArticle(title,content);
+    const transaction = await contract.addArticle(title,content,username);
     await transaction.wait();
     console.log("Transaction is done");
     const User_id = localStorage.getItem("user_id")
@@ -116,12 +116,12 @@ const Forum = ({state}) => {
     
 
   }
-  const addAnonymously = async ()=>{
+  const addAnonymous = async ()=>{
     try{
       const { contract } = state;
     console.log(title, content, contract);
     // const amount = { value: ethers.utils.parseEther("0.001") };
-    const transaction = await contract.addArticleAnonymous(title,content);
+    const transaction = await contract.addAnonymously(title,content);
     await transaction.wait();
     console.log("Transaction is done");
     const User_id = localStorage.getItem("User_id")
@@ -159,6 +159,8 @@ const Forum = ({state}) => {
     const {contract} = state;
     const transaction = await contract.validateArticle(article_id);
     await transaction.wait();
+    const users = await contract.getAllUsers();
+    console.log("All the user info is-->",users);
     }catch(error){
       console.log(error);
     }
@@ -213,6 +215,9 @@ const Forum = ({state}) => {
       <li className="nav-item">
         <Link className = "nav-link" to="/update">Update User</Link>
       </li>
+      <li className="nav-item">
+        <Link className = "nav-link" to="/user/profile">User Profile</Link>
+      </li>
     </ul>
     {/* <span className="navbar-text">
     {localStorage.getItem("address")}
@@ -229,7 +234,7 @@ const Forum = ({state}) => {
         setContent(e.target.value)
       }}></textarea>
       <button className=' btn btn-primary mt-3' onClick={addArticle}>Add</button>
-      <button className=' btn btn-primary ml-2 mt-3' onClick={addAnonymously}>Add Anonymously</button>
+      <button className=' btn btn-primary ml-2 mt-3' onClick={addAnonymous}>Add Anonymously</button>
       </div>
     </form>
     {/* <button onClick={ArticlesMessage}> Get </button> */}
