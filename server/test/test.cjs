@@ -86,7 +86,7 @@ describe("NewsForumContract", function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: addr1.address };
-        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user");
         expect(await hardhatNewsForumContract.getArticleCount()).to.equal(numArticles + 1);
         const newArticle = await hardhatNewsForumContract.getArticleById(numArticles);
         expect(newArticle.title).to.equal(article.title);
@@ -103,27 +103,27 @@ describe("NewsForumContract", function () {
             content += "content ";
         }
         const article = { title: "title", content: content, author: addr1.address };
-        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content + " " + article.content)).to.be.revertedWith("Article must have less than 200 words");
+        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content + " " + article.content, "user")).to.be.revertedWith("Article must have less than 200 words");
         let title = "";
         for (let i = 0; i < 50; i++) {
             title += "title ";
         }
         article.title = title;
         article.content = "content";
-        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content + " " + article.content)).to.be.revertedWith("Title must have less than 30 words");
+        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content + " " + article.content, "user")).to.be.revertedWith("Title must have less than 30 words");
     });
 
     it("Unauthorized user should not be able to add an article", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
         const article = { title: "title", content: "content", author: addr1.address };
-        await expect(hardhatNewsForumContract.connect(addr2).addArticle(article.title, article.content)).to.be.revertedWith("You must be registered to perform the action");
+        await expect(hardhatNewsForumContract.connect(addr2).addArticle(article.title, article.content, "user")).to.be.revertedWith("You must be registered to perform the action");
     });
 
     it("Should update an article", async function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: addr1.address };
-        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user");
         const newArticle = { title: "new title", content: "new content", author: addr1.address };
         await hardhatNewsForumContract.connect(addr1).updateArticle(numArticles, newArticle.title, newArticle.content);
         const updatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
@@ -136,7 +136,7 @@ describe("NewsForumContract", function () {
         const { NewsForumContract, hardhatNewsForumContract, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: addr1.address };
-        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user");
         const newArticle = { title: "new title", content: "new content", author: addr1.address };
         await expect(hardhatNewsForumContract.connect(addr1).updateArticle(numArticles + 1, newArticle.title, newArticle.content)).to.be.reverted;
     })
@@ -146,7 +146,7 @@ describe("NewsForumContract", function () {
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const articles = [{ title: "article1", content: "content1", author: addr1.address }, { title: "article2", content: "content2", author: addr1.address }, { title: "article3", content: "content3", author: addr1.address }];
         for (let i in articles) {
-            await hardhatNewsForumContract.connect(addr1).addArticle(articles[i].title, articles[i].content);
+            await hardhatNewsForumContract.connect(addr1).addArticle(articles[i].title, articles[i].content, "user");
             const a = await hardhatNewsForumContract.getArticleById(numArticles + parseInt(i, 10));
         }
         expect(await hardhatNewsForumContract.getArticleCount()).to.equal(numArticles + articles.length);
@@ -177,7 +177,7 @@ describe("NewsForumContract", function () {
         const addr1 = user.signer;
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: user.signer.address };
-        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user");
         for (let i = 0; i < numValidators; i++) {
             await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(numArticles);
         }
@@ -211,7 +211,7 @@ describe("NewsForumContract", function () {
         }
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: addr1.address };
-        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user");
         for (let i = 0; i < users.length; i++) {
             if (i >= 5) {
                 await expect(hardhatNewsForumContract.connect(users[i].signer).upvoteArticle(numArticles)).be.reverted;
@@ -230,9 +230,9 @@ describe("NewsForumContract", function () {
         const maxUnvalidatedArticles = await hardhatNewsForumContract.maxUnvalidatedArticles();
         const article = { title: "title", content: "content", author: addr1.address };
         for (let i = 0; i < maxUnvalidatedArticles; i++) {
-            await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content);
+            await hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user");
         }
-        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content)).be.revertedWith("You have reached the maximum number of unvalidated articles");
+        await expect(hardhatNewsForumContract.connect(addr1).addArticle(article.title, article.content, "user")).be.revertedWith("You have reached the maximum number of unvalidated articles");
     });
 
     it("Should validate an article by Active Validators", async function () {
@@ -241,7 +241,7 @@ describe("NewsForumContract", function () {
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content" };
         await hardhatNewsForumContract.connect(owner).addNewUser("name", "email", (await ethers.getSigner(numValidators)).address);
-        await hardhatNewsForumContract.connect(await ethers.getSigner(numValidators)).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(await ethers.getSigner(numValidators)).addArticle(article.title, article.content, "user");
         const unvalidatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
         expect(unvalidatedArticle.isValidated).to.equal(false);
 
@@ -263,7 +263,7 @@ describe("NewsForumContract", function () {
         const article = { title: "title", content: "content" };
         const signer = await ethers.getSigner(numValidators);
         await hardhatNewsForumContract.connect(owner).addNewUser("name", "email", signer.address);
-        await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content, "user");
         const unvalidatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
         expect(unvalidatedArticle.isValidated).to.equal(false);
 
@@ -290,7 +290,7 @@ describe("NewsForumContract", function () {
         }
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content", author: users[0].address };
-        await hardhatNewsForumContract.connect(users[0].signer).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(users[0].signer).addArticle(article.title, article.content, "user");
 
 
         const initialBalances = [];
@@ -322,7 +322,7 @@ describe("NewsForumContract", function () {
         const signer2 = await ethers.getSigner(numValidators + 1);
         await hardhatNewsForumContract.addNewUser("name1", "email1", signer1.address);
         await hardhatNewsForumContract.addNewUser("name2", "email2", signer2.address);
-        await hardhatNewsForumContract.connect(signer1).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(signer1).addArticle(article.title, article.content, "user");
         await expect(hardhatNewsForumContract.connect(signer2).validateArticle(numArticles)).to.be.revertedWith("You must be a validator to perform the action");
     });
 
@@ -335,7 +335,7 @@ describe("NewsForumContract", function () {
         const article = { title: "title", content: "content" };
         await hardhatNewsForumContract.connect(owner).addNewUser("name", "email", signer.address);
         for (let i = 0; i < minArticleValidationsToGetValidatorPower; i++) {
-            await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content);
+            await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content, "user");
         }
         let user = await hardhatNewsForumContract.getUser(numValidators + 1);
         expect(await user.canBeValidator).to.equal(false);
@@ -361,7 +361,7 @@ describe("NewsForumContract", function () {
 
         const article = { title: "title", content: "content", author: validators[0].address };
 
-        await hardhatNewsForumContract.connect(validators[0].signer).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(validators[0].signer).addArticle(article.title, article.content, "user");
         await expect(hardhatNewsForumContract.connect(validators[0].signer).validateArticle(numArticles)).to.be.revertedWith("You cannot validate your own article");
 
     });
@@ -372,7 +372,7 @@ describe("NewsForumContract", function () {
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         const article = { title: "title", content: "content" };
         await hardhatNewsForumContract.connect(owner).addNewUser("name", "email", (await ethers.getSigner(numValidators)).address);
-        await hardhatNewsForumContract.connect(await ethers.getSigner(numValidators)).addArticle(article.title, article.content);
+        await hardhatNewsForumContract.connect(await ethers.getSigner(numValidators)).addArticle(article.title, article.content, "user");
         const unvalidatedArticle = await hardhatNewsForumContract.getArticleById(numArticles);
         expect(unvalidatedArticle.isValidated).to.equal(false);
 
@@ -394,7 +394,7 @@ describe("NewsForumContract", function () {
             newValidators.push(user);
             await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
             for (let j = 0; j < minArticleValidationsToGetValidatorPower; j++) {
-                await hardhatNewsForumContract.connect(user.signer).addArticle("title", "content");
+                await hardhatNewsForumContract.connect(user.signer).addArticle("title", "content", "user");
             }
         }
         let currentNumberOfArticles = (maxNumberOfActiveValidators - numValidators) * minArticleValidationsToGetValidatorPower;
@@ -412,7 +412,7 @@ describe("NewsForumContract", function () {
 
         // Now we will add minArticleValidationsToGetValidatorPower articles for the new user
         for (let j = 0; j < minArticleValidationsToGetValidatorPower; j++) {
-            await hardhatNewsForumContract.connect(newUser.signer).addArticle("title1", "content1");
+            await hardhatNewsForumContract.connect(newUser.signer).addArticle("title1", "content1", "user");
         }
 
         // Now we will validate the new articles and see if the new user becomes a validator
@@ -447,6 +447,8 @@ describe("NewsForumContract", function () {
         const signers = await randomSigners(numUsers);
         const users = [];
         const articles = [];
+        console.log("Testing with a large number of users, this may take a while(100 sec approx)");
+        console.log("Registering", numUsers, "users and adding an article for each user");
         for (let i = 0; i < numUsers; i++) {
             const signer = signers[i];
             const user = { name: "user" + i, email: "tsi" + i + "@gmail.com", signer: signer };
@@ -454,7 +456,7 @@ describe("NewsForumContract", function () {
             const article = { title: "title" + i, content: "content" + i };
             articles.push(article);
             await hardhatNewsForumContract.addNewUser(user.name, user.email, user.signer.address);
-            await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content);
+            await hardhatNewsForumContract.connect(signer).addArticle(article.title, article.content, "user");
         }
         const usersInContract = await hardhatNewsForumContract.getAllUsers();
         // validators are created and one extra is invalid user
@@ -462,7 +464,7 @@ describe("NewsForumContract", function () {
         const numArticles = parseInt(await hardhatNewsForumContract.getArticleCount(), 10);
         // One extra is invalid article
         expect(numArticles).to.equal(numUsers + 1);
-
+        console.log("Validating all articles");
         for (let i = 0; i < Math.floor(maxNumberOfActiveValidators / 2); i++) {
             for (let j = 0; j < numUsers; j++) {
                 await hardhatNewsForumContract.connect(validators[i].signer).validateArticle(j + 1);
@@ -472,6 +474,7 @@ describe("NewsForumContract", function () {
         let validatedArticles = await hardhatNewsForumContract.getAllValidatedArticles();
         validatedArticles = validatedArticles.filter((article) => { return article.isValidated; });
         expect(validatedArticles.length).to.equal(numUsers);
+        console.log("Upvoting all articles");
         for (let i = 1; i < numUsers; i++) {
             await hardhatNewsForumContract.connect(users[i].signer).upvoteArticle(1);
         }
