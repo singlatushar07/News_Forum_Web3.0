@@ -8,7 +8,7 @@ contract NewsForumContract {
     //uint256 public constant VALIDATION_REWARD = 10;
     //uint256 public constant NUMBER_OF_ACTIVE_VALIDATORS = 3;
     uint256 public totalRewardCount = 10;
-    uint256 public maxNumberOfActiveValidators = 10;
+    uint256 public maxNumberOfActiveValidators = 5;
     uint256 public constant upvotesCountForAwardToValidator = 5;
     uint256 public constant rewardToEditorUponArticleValidation = 1;
     uint256 public constant rewardToValidatorsUponReachingUpvotes = 1;

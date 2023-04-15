@@ -159,6 +159,12 @@ const Forum = ({state}) => {
     const {contract} = state;
     const transaction = await contract.validateArticle(article_id);
     await transaction.wait();
+
+    //printing the users to see their info each time like validation power, their rewards.
+    const users = await contract.getAllUsers();
+    console.log("All the user info is -->  ", users);
+
+
     }catch(error){
       console.log(error);
     }
@@ -170,6 +176,10 @@ const Forum = ({state}) => {
       const transaction = await contract.upvoteArticle(article_id);
       await transaction.wait();
       console.log("upvote transaction done");
+
+      //printing the users to see their info each time like validation power, their rewards.
+      const users = await contract.getAllUsers();
+      console.log("All the user info is -->  ", users);
       // const result = await contract.getNumberOfUpvotes(article_id);
       // // setUpvotes(result);
       // const x = parseInt(result._hex,16);
@@ -229,7 +239,7 @@ const Forum = ({state}) => {
         setContent(e.target.value)
       }}></textarea>
       <button className=' btn btn-primary mt-3' onClick={addArticle}>Add</button>
-      <button className=' btn btn-primary ml-2 mt-3' onClick={addAnonymously}>Add Anonymously</button>
+      {/* <button className=' btn btn-primary ml-2 mt-3' onClick={addAnonymously}>Add Anonymously</button> */}
       </div>
     </form>
     {/* <button onClick={ArticlesMessage}> Get </button> */}
