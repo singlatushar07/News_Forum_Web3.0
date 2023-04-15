@@ -8,7 +8,7 @@
 - Validation power given to new user when conditions met.
 ##### Features in experimental branch
 - Add an article anonymoously.
-- User profile page.
+- User profile page.(Note: When you are login with a particular user the user profile of that user will only be shown, even on changing metamask account )
 - Details of the author when displaying an article.
 
 ### Instructions for setting up and running the News Forum Web3.0 application are as follows: 
