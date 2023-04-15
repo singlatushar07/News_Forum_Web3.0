@@ -11,6 +11,10 @@
 - User profile page.(Note: When you are login with a particular user the user profile of that user will only be shown, even on changing metamask account )
 - Details of the author when displaying an article.
 
+### Notes
+1. When you login/register into the platform make sure that you are switching the account in the Metamask. This won't happen automatically but is important for the working of the platform.
+
+
 ### Instructions for setting up and running the News Forum Web3.0 application are as follows: 
 
 - Have Metamask extension installed in your browser. Preferably Chrome. Also add localhost:8545 to the list in Metamask. Create any three new user accounts in Metamask for testing the app. To create new user accounts in Metamask, use 3 of the 20 private keys that are displayed when you ran ‘npx hardhat node’. This is necessary to ensure that you have enough balance in your Meta mask wallet to be able to do the transactions. This process has to be repeated each time you run ‘npx hardhat node’. 
